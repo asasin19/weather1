@@ -12,17 +12,20 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
+import android.widget.CompoundButton;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.gleb.first.MainActivity;
 import com.example.gleb.first.R;
+import com.example.gleb.first.cache.Cacher;
 import com.example.gleb.first.config.context.ConfigItem;
 import com.example.gleb.first.config.context.ConfigItemAdapter;
 import com.example.gleb.first.config.context.ConfigItemCheckBox;
 import com.example.gleb.first.config.context.ConfigItemIcon;
 import com.example.gleb.first.config.context.ConfigItemSwitch;
+import com.example.gleb.first.config.context.Items;
 import com.example.gleb.first.language.Language;
 
 import java.util.ArrayList;
@@ -31,17 +34,30 @@ import java.util.List;
 public class Configuration extends AppCompatActivity {
 
     private ListView listView;
-    private String CONFIGURATION_VOLUME = "Volume";
+    private String CONFIGURATION_NOTIFICATIONS = "Notifications";
     private String CONFIGURATION_LANGUAGE = "Language";
     private String CONFIGURATION_DATA = "Data";
     private String CONFIGURATION_EXIT = "Exit";
+
+    private boolean notificationState;
+    private Intent intent;
+    private Bundle toReturn;
+    private int activity_result;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_configuration);
+        String tmp = Cacher.readConfig(MainActivity.FOLDER_CONFIG, MainActivity.CONFIG_NOTIFICATION_STATE);
+        if(tmp == null)
+            notificationState = true;
+        else
+            notificationState = Boolean.parseBoolean(tmp);
 
-
+        Intent intent = new Intent();
+        toReturn = new Bundle();
+        intent.putExtras(toReturn);
+        setResult(9998, intent);
 
         listView = (ListView) findViewById(R.id.configurationList);
         //ArrayAdapter<String> adapter = new ArrayAdapter<String>(Configuration.this, android.R.layout.simple_list_item_1, params);
@@ -49,7 +65,7 @@ public class Configuration extends AppCompatActivity {
     }
 
     public void initLanguageMenu(){
-        CONFIGURATION_VOLUME = getString(R.string.configuration_volume);
+        CONFIGURATION_NOTIFICATIONS = getString(R.string.configuration_volume);
         CONFIGURATION_LANGUAGE = getString(R.string.configuration_language);
         CONFIGURATION_DATA = getString(R.string.configuration_data);
         CONFIGURATION_EXIT = getString(R.string.configuration_exit);
@@ -63,7 +79,7 @@ public class Configuration extends AppCompatActivity {
     private List<ConfigItem> initConfigList(){
         List<ConfigItem> list = new ArrayList<ConfigItem>();
 
-        list.add(new ConfigItemSwitch(CONFIGURATION_VOLUME, ((AudioManager)getSystemService(Context.AUDIO_SERVICE)).getStreamVolume(AudioManager.STREAM_ALARM) + "", true));
+        list.add(new ConfigItemSwitch(CONFIGURATION_NOTIFICATIONS, notificationState?getString(R.string.desription_setting_notifications_on):getString(R.string.desription_setting_notifications_off) , notificationState));
         list.add(new ConfigItem(CONFIGURATION_LANGUAGE, getBaseContext().getResources().getConfiguration().locale.getDisplayName()));
         list.add(new ConfigItemCheckBox(CONFIGURATION_DATA, "Data Parametrs", false));
         list.add(new ConfigItemIcon(CONFIGURATION_EXIT, "Exit from application"));
@@ -76,6 +92,13 @@ public class Configuration extends AppCompatActivity {
         initLanguageMenu();
         final ConfigItemAdapter adapter = new ConfigItemAdapter(Configuration.this, initConfigList());
         listView.setAdapter(adapter);
+        adapter.setOnCheckedListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                notificationState = b;
+                toReturn.putBoolean(MainActivity.CONFIG_NOTIFICATION_STATE, notificationState);
+            }
+        }, Items.ITEM_SWITCH);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -92,11 +115,12 @@ public class Configuration extends AppCompatActivity {
 
                 }
                 else if(item_name.equals(getString(R.string.configuration_exit))){
-                    setResult(9999);
+                    setResult(9999, intent);
                     finish();
                 }
             }
         });
+
 
         super.onStart();
     }
@@ -108,7 +132,12 @@ public class Configuration extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        setResult(MainActivity.RESULT_CONFIGURATIONS_OK);
+        setResult(MainActivity.RESULT_CONFIGURATIONS_OK, intent);
         finish();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 }

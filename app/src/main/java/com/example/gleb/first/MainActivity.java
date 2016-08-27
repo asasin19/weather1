@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
     public static final String CONFIG_PRESSURE = "Pressure";
     public static final String CONFIG_ICON_NAME = "IconName";
     public static final String CONFIG_LOCALE = "Locale";
+    public static final String CONFIG_NOTIFICATION_STATE = "Notification State";
 
     public static final String FOLDER_CONFIG = "Main";
 
@@ -66,6 +67,8 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
 
     private String prev_wright_city;
     private String icon_name_weather;
+    private boolean notifiaction_active;
+    private NotificationService service;
 
 
     public static final long UPDATE_FREQ = 80000;
@@ -77,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
 
         serviceConnection = new ServiceConnection() {
             @Override
-            public void onServiceConnected(ComponentName componentName, IBinder iBinder) {}
+            public void onServiceConnected(ComponentName componentName, IBinder iBinder) { service = ((NotificationService.MyBinder) iBinder).getService();}
             @Override
             public void onServiceDisconnected(ComponentName componentName) {}};
 
@@ -99,8 +102,6 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
         //
 
         weather = new Weather(getApplicationContext() , handlerInit());
-
-        startService(new Intent(getApplicationContext(), NotificationService.class));
 
         cityLine.setOnKeyListener(new View.OnKeyListener() {
             @Override
@@ -148,19 +149,24 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
                 pressureView.setText(properties.getProperty(CONFIG_PRESSURE));
                 icon_name_weather = properties.getProperty(CONFIG_ICON_NAME);
                 new PictureRenderer(image).execute(icon_name_weather);
-                String lang = properties.getProperty(CONFIG_LOCALE);
-                if(!Locale.getDefault().getLanguage().equals(lang) && lang != "" && lang != null){
-                    changeLocale(new Locale(lang));
+                String tmp = properties.getProperty(CONFIG_LOCALE);
+                if(!Locale.getDefault().getLanguage().equals(tmp) && tmp != "" && tmp != null){
+                    changeLocale(new Locale(tmp));
                     initMultiLanguage();
                 }
+                tmp = properties.getProperty(CONFIG_NOTIFICATION_STATE);
+                if(tmp == null || tmp.equals(""))
+                    notifiaction_active = true;
+                else
+                    notifiaction_active = Boolean.parseBoolean(properties.getProperty(CONFIG_NOTIFICATION_STATE));
             }
         }.execute();
 
+        startService(new Intent(getApplicationContext(), NotificationService.class));
         final Timer timer = new Timer();
         timer.scheduleAtFixedRate(weather, 10, UPDATE_FREQ);
 
         bindService(new Intent(getApplicationContext(), NotificationService.class), serviceConnection, BIND_AUTO_CREATE);
-
     }
 
     private Handler handlerInit(){
@@ -179,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
 
                 }else {
                     cityLine.setText(data.getString("prev_city"));
-                    //Toast.makeText(getApplicationContext(), data.getString("Error"), Toast.LENGTH_LONG);
+                    Toast.makeText(getApplicationContext(), data.getString("Error"), Toast.LENGTH_LONG);
                 }
                 String icon_name = data.getString(CONFIG_ICON_NAME);
                 Log.d(Cacher.CACHE_LOG_TAG, "Icon name = " + icon_name);
@@ -241,7 +247,16 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
             }
             case RESULT_APPLICATION_EXIT: {
                 finish();
+                break;
             }
+        }
+
+        Bundle bundle = data.getExtras();
+        Boolean state = bundle.getBoolean(CONFIG_NOTIFICATION_STATE);
+        Log.d(CONFIG_NOTIFICATION_STATE, state.toString());
+        if(state != null) {
+            notifiaction_active = state;
+            service.activeService(notifiaction_active);
         }
     }
 
@@ -256,6 +271,7 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
         properties.setProperty(CONFIG_PRESSURE, pressureView.getText().toString());
         properties.setProperty(CONFIG_ICON_NAME, icon_name_weather);
         properties.setProperty(CONFIG_LOCALE, Locale.getDefault().getLanguage());
+        properties.setProperty(CONFIG_NOTIFICATION_STATE, notifiaction_active + "");
         Cacher.cacheConfig(FOLDER_CONFIG, properties);
         Cacher.saveAllConfigs();
 

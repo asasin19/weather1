@@ -31,4 +31,9 @@
     <string name="service_notification_contentText">"Current temperature </string>
     <!-- -->
 
+    <!-- Text Interpretate -->
+    <string name="desription_setting_notifications_off">Notifications was turn off.</string>
+    <string name="desription_setting_notifications_on">Notification is active</string>
+    <!-- -->
+
 </resources>

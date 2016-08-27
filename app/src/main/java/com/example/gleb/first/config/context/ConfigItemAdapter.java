@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -30,6 +31,9 @@ public class ConfigItemAdapter extends BaseAdapter{
     private List<ConfigItem> items;
     private LayoutInflater context;
 
+    private Switch switch_item_switch;
+
+
     public ConfigItemAdapter(@NonNull Context context , List<ConfigItem> items) {
         for (Object obj : items)
             Log.d("TestClassConf", obj.getClass().getSimpleName());
@@ -50,6 +54,17 @@ public class ConfigItemAdapter extends BaseAdapter{
     @Override
     public long getItemId(int i) {
         return i;
+    }
+
+    public void setOnCheckedListener(CompoundButton.OnCheckedChangeListener listener, String item){
+        switch (item){
+            case Items.ITEM_SWITCH:{
+                if(switch_item_switch == null)
+                    return;
+                switch_item_switch.setOnCheckedChangeListener(listener);
+                break;
+            }
+        }
     }
 
     @Override
@@ -79,6 +94,9 @@ public class ConfigItemAdapter extends BaseAdapter{
                 ConfigItemSwitch item1 = (ConfigItemSwitch) item;
                 if (view == null)
                     view = context.inflate(R.layout.config_item_switch, viewGroup, false);
+
+                switch_item_switch = (Switch)view.findViewById(R.id.config_switch);
+                switch_item_switch.setChecked(item1.getSwitch());
 
                 Log.d("CONFIG", "IN CONFIG SWITCH ITEM. ID = " + i);
                 break;

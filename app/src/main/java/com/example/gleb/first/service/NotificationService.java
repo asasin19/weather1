@@ -42,6 +42,8 @@ public class NotificationService extends Service {
     private String last_icon;
     private String city;
 
+    private boolean serviceState;
+
 
 
     @Nullable
@@ -53,17 +55,21 @@ public class NotificationService extends Service {
 
     }
 
-    public void offNotations(){
+    private void offNotations(){
         timer.cancel();
         timer = null;
     }
 
-    public void onNotations(){
+    private void onNotations(){
         try {
             getTimer().scheduleAtFixedRate(getWeather(), refresh_time, refresh_time);
         }catch (IllegalStateException ex){
 
         }
+    }
+
+    public void activeService(boolean state){
+        serviceState = state;
     }
 
     public void setCity(String city){
@@ -146,6 +152,8 @@ public class NotificationService extends Service {
 
     @Override
     public boolean onUnbind(Intent intent) {
+        if(!serviceState)
+            stopSelf(NOTIFICATION_WEATHER_ID);
         onNotations();
         Log.d(SERVICE_TAG, "onUnbind");
         return super.onUnbind(intent);
@@ -156,8 +164,8 @@ public class NotificationService extends Service {
         super.onRebind(intent);
     }
 
-    class MyBinder extends Binder{
-        NotificationService getService(){
+    public class MyBinder extends Binder{
+        public NotificationService getService(){
             return NotificationService.this;
         }
     }
