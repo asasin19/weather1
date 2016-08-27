@@ -143,7 +143,7 @@ public class Cacher {
     }
 
     public static boolean saveAllConfigs(){
-
+        createFolders();
         for(String name : config_cache.keySet()) {
             BufferedWriter writer = null;
             try {
@@ -213,10 +213,10 @@ public class Cacher {
     public static boolean createFolders(){
         List<Boolean> statusList = new ArrayList<Boolean>(2);
 
-        File file = new File(Environment.getExternalStorageDirectory() + IMAGE_FOLDER_PATH);
+        File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + IMAGE_FOLDER_PATH);
         if(!file.exists())
             statusList.add(file.mkdirs());
-        file = new File(Environment.getExternalStorageDirectory() + CONFIG_FOLDER_PATH);
+        file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + CONFIG_FOLDER_PATH);
         if(!file.exists())
             statusList.add(file.mkdirs());
 

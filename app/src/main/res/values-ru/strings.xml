@@ -27,4 +27,10 @@
     <string name="menu_item_exit">Выход</string>
     <!-- -->
 
+    <!-- Service Notification -->
+    <string name="service_notification_title">Погода изменилась! Вы видели? Видели это?</string>
+    <string name="service_notification_ticker">Привет, видел погоду сегодня?</string>
+    <string name="service_notification_contentText">Текущая температура </string>
+    <!-- -->
+
 </resources>

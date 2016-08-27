@@ -1,8 +1,11 @@
 package com.example.gleb.first;
 
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -58,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
     //
 
     private Weather weather;
-
+    private ServiceConnection serviceConnection;
     private Menu menu;
 
     private String prev_wright_city;
@@ -71,6 +74,13 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        serviceConnection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName componentName, IBinder iBinder) {}
+            @Override
+            public void onServiceDisconnected(ComponentName componentName) {}};
+
 
         //Dynamic views init
         minTempView = (TextView) findViewById(R.id.minTempView);
@@ -136,7 +146,8 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
                 minTempView.setText(properties.getProperty(CONFIG_MIN_TEMPERATURE));
                 maxTempView.setText(properties.getProperty(CONFIG_MAX_TEMPERATURE));
                 pressureView.setText(properties.getProperty(CONFIG_PRESSURE));
-                new PictureRenderer(image).execute(properties.getProperty(CONFIG_ICON_NAME));
+                icon_name_weather = properties.getProperty(CONFIG_ICON_NAME);
+                new PictureRenderer(image).execute(icon_name_weather);
                 String lang = properties.getProperty(CONFIG_LOCALE);
                 if(!Locale.getDefault().getLanguage().equals(lang) && lang != "" && lang != null){
                     changeLocale(new Locale(lang));
@@ -147,6 +158,8 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
 
         final Timer timer = new Timer();
         timer.scheduleAtFixedRate(weather, 10, UPDATE_FREQ);
+
+        bindService(new Intent(getApplicationContext(), NotificationService.class), serviceConnection, BIND_AUTO_CREATE);
 
     }
 
@@ -245,6 +258,8 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
         properties.setProperty(CONFIG_LOCALE, Locale.getDefault().getLanguage());
         Cacher.cacheConfig(FOLDER_CONFIG, properties);
         Cacher.saveAllConfigs();
+
+        unbindService(serviceConnection);
     }
 
     @Override

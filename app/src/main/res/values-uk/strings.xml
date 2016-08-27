@@ -25,4 +25,10 @@
     <string name="menu_item_exit">Вихід</string>
     <!-- -->
 
+    <!-- Service Notification -->
+    <string name="service_notification_title">Погода змінилася? Ви це побачили?)</string>
+    <string name="service_notification_ticker">Прівіт, бачив погоду сьогодні?</string>
+    <string name="service_notification_contentText">Зараз температура складае </string>
+    <!-- -->
+
 </resources>

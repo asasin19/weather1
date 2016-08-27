@@ -29,7 +29,11 @@
         <service android:name=".service.NotificationService"
             android:exported="true"
             android:enabled="true"
-            android:directBootAware="true" >
+            android:directBootAware="true"
+            >
+                <intent-filter>
+                    <action android:name="com.example.gleb.first.Notification" />
+                </intent-filter>
             </service>
     </application>
 

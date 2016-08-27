@@ -25,4 +25,10 @@
     <string name="menu_item_exit">Exit</string>
     <!-- -->
 
+    <!-- Service Notification -->
+    <string name="service_notification_title">Weather are changing! You see? see that?</string>
+    <string name="service_notification_ticker">Hello, are u see weather today?</string>
+    <string name="service_notification_contentText">"Current temperature </string>
+    <!-- -->
+
 </resources>

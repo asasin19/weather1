@@ -7,6 +7,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -33,54 +34,107 @@ public class NotificationService extends Service {
     private long refresh_time = 120000;
 
     private NotificationManager manager;
+    private Timer timer;
+
+    private MyBinder binder = new MyBinder();
+    private Weather weather;
+
+    private String last_icon;
+    private String city;
+
+
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
+        offNotations();
+        Log.d(SERVICE_TAG, "onBind");
+        return binder;
 
-        return null;
+    }
+
+    public void offNotations(){
+        timer.cancel();
+        timer = null;
+    }
+
+    public void onNotations(){
+        try {
+            getTimer().scheduleAtFixedRate(getWeather(), refresh_time, refresh_time);
+        }catch (IllegalStateException ex){
+
+        }
+    }
+
+    public void setCity(String city){
+        this.city = city;
+        weather.setCity(city);
+    }
+
+    public Timer getTimer(){
+        if(timer != null)
+            return timer;
+        return (timer = new Timer());
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
+        weather = getWeather();
+
         Log.d(SERVICE_TAG, "onCreate");
         manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
         Toast.makeText(this, "Service started", Toast.LENGTH_LONG);
 
-        Timer timer = new Timer();
-        timer.scheduleAtFixedRate(new Weather(this, new Handler(){
+        getTimer().scheduleAtFixedRate(getWeather(), refresh_time, refresh_time);
+    }
+
+    private Handler getHandler() {
+        return new Handler() {
             @Override
             public void handleMessage(Message msg) {
                 Bundle bundle = msg.getData();
                 String icon_name = bundle.getString(MainActivity.CONFIG_ICON_NAME);
-                Log.d(SERVICE_TAG, "MessageHandled!");
+                Bitmap image = null;
+                if(last_icon == icon_name)
+                    return;
+                if ((image = Cacher.readImage(icon_name)) == null)
+                    return;
+
                 Notification.Builder builder = new Notification.Builder(getApplicationContext());
-                builder.setContentTitle("Weather change state!")
+                builder.setContentTitle(getString(R.string.service_notification_title))
                         .setAutoCancel(true)
-                        .setTicker("Hello, are u see weather today?")
+                        .setTicker(getString(R.string.service_notification_ticker))
+                        .setContentText(getString(R.string.service_notification_contentText) + bundle.getString(MainActivity.CONFIG_TEMPERATURE))
                         .setWhen(System.currentTimeMillis())
                         .setDefaults(Notification.DEFAULT_ALL)
                         .setSmallIcon(R.drawable.ic_notify_weather)
                         .setContentIntent(PendingIntent.getActivity(getApplicationContext(), 0, new Intent(getApplicationContext(), MainActivity.class), PendingIntent.FLAG_CANCEL_CURRENT));
 
-                Bitmap image = null;
-                if((image = Cacher.readImage(icon_name)) == null)
-                    return;
+                image = Bitmap.createScaledBitmap(image, 5, 5 ,false);
                 builder.setLargeIcon(image);
+
 
                 Notification nf = builder.getNotification();
                 manager.notify(NOTIFICATION_WEATHER_ID, nf);
+                last_icon = icon_name;
 
 
             }
-        }, "Kyiv"), refresh_time, refresh_time);
+        };
+    }
+
+    private Weather getWeather(){
+        if(weather != null)
+            return weather;
+        return (weather = new Weather(getApplicationContext(),getHandler(), "Kyiv" ));
     }
 
     @Override
     public void onDestroy() {
         Log.d(SERVICE_TAG, "onDestroy");
+        offNotations();
         super.onDestroy();
     }
 
@@ -92,11 +146,19 @@ public class NotificationService extends Service {
 
     @Override
     public boolean onUnbind(Intent intent) {
+        onNotations();
+        Log.d(SERVICE_TAG, "onUnbind");
         return super.onUnbind(intent);
     }
 
     @Override
     public void onRebind(Intent intent) {
         super.onRebind(intent);
+    }
+
+    class MyBinder extends Binder{
+        NotificationService getService(){
+            return NotificationService.this;
+        }
     }
 }
