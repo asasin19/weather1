@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">Погода</string>
+    <string name="openweather_apiID">5b5375e5f95b02ad0553a181b2dd9857</string>
+    <string name="saved_city">Киев</string>
+    <string name="title_activity_control">Управление</string>
+    <string name="title_activity_configuration">Конфигурации</string>
+    <string name="title_activity_language">Выбор языка</string>
+
+
+    <!-- Main Activity -->
+    <string name="Min_tmp" >Минимальная т.</string>
+    <string name="Max_tmp" >Максимальная т.</string>
+    <string name="Tmp" >Температура</string>
+    <string name="Pressure" >Давление</string>
+    <!-- -->
+
+    <!-- Settings menu -->
+    <string name="configuration_volume">Громкость</string>
+    <string name="configuration_language">Язык</string>
+    <string name="configuration_data">Данные</string>
+    <string name="configuration_exit">Выход</string>
+    <!-- -->
+
+
+    <!-- Menu items -->
+    <string name="menu_item_settings">Настройки</string>
+    <string name="menu_item_exit">Выход</string>
+    <!-- -->
+
+</resources>

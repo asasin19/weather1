@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/Settings"
+        android:orderInCategory="1"
+        android:title="@string/menu_item_settings"
+        />
+
+
+    <item
+        android:id="@+id/Exit"
+        android:orderInCategory="2"
+        android:title="@string/menu_item_exit"
+        android:icon="@android:drawable/ic_menu_close_clear_cancel"
+        />
+
+    <!--
+    <item
+        android:id="@+id/Settings_Type"
+        android:orderInCategory="3"
+        android:title=""
+        />
+    -->
+</menu>
