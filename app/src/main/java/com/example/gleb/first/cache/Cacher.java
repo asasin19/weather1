@@ -147,7 +147,7 @@ public class Cacher {
         for(String name : config_cache.keySet()) {
             BufferedWriter writer = null;
             try {
-                File file = new File(Environment.getExternalStorageDirectory() + CONFIG_FOLDER_PATH + "/" + name + CONFIG_TYPE);
+                File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + CONFIG_FOLDER_PATH + "/" + name + CONFIG_TYPE);
                 Properties properties = readConfig(name);
                 if (!file.exists())
                     file.createNewFile();
