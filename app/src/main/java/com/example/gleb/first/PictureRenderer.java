@@ -3,6 +3,7 @@ package com.example.gleb.first;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.os.Binder;
 import android.widget.ImageView;
 
 import com.example.gleb.first.cache.Cacher;
@@ -14,35 +15,24 @@ import java.net.URL;
  */
 public class PictureRenderer extends AsyncTask<String, Void, Bitmap> {
 
-    public static final String IMAGE_SOURCE_URI = "http://openweathermap.org/img/w/";
-    public static final String IMAGE_SOURCE_TYPE = ".png";
+    private ImageLoader loader;
 
     private float image_scale = 5;
 
     private ImageView image;
 
     PictureRenderer(ImageView image){
+        this.loader = new ImageLoader();
         this.image = image;
     }
 
+
     @Override
     protected Bitmap doInBackground(String... strings) {
-        final String imageName = strings[0];
-        Bitmap bitmap = Cacher.readImage(imageName);
-        if(bitmap == null){
-            String s_url =  IMAGE_SOURCE_URI + imageName + IMAGE_SOURCE_TYPE;
-            try {
-
-                bitmap = BitmapFactory.decodeStream(new URL(s_url).openStream());
-                Cacher.cacheImage(bitmap, imageName);
-
-            }catch (Exception ex){
-
-            }
-
-        }
-        return bitmap;
+        return loader.getBitmap(strings[0]);
     }
+
+
 
     @Override
     protected void onPostExecute(Bitmap bitmap) {

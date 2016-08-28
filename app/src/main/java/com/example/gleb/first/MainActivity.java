@@ -226,7 +226,10 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
         switch (item.getItemId())
         {
             case R.id.Settings:
-                startActivityForResult(new Intent(this, Configuration.class), RESULT_CONFIGURATIONS_OK);
+                Bundle bundle = new Bundle();
+                Intent intent = new Intent(this, Configuration.class);
+                intent.putExtras(bundle);
+                startActivityForResult(intent, RESULT_CONFIGURATIONS_OK);
                 break;
             case R.id.Exit:
                 finish();
@@ -242,7 +245,6 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
             case RESULT_CONFIGURATIONS_OK: {
                 initMultiLanguage();
                 Toast.makeText(this, "Setting closed", Toast.LENGTH_SHORT).show();
-                super.onActivityResult(requestCode, resultCode, data);
                 break;
             }
             case RESULT_APPLICATION_EXIT: {
@@ -258,6 +260,8 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
             notifiaction_active = state;
             service.activeService(notifiaction_active);
         }
+
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override

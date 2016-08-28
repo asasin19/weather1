@@ -40,7 +40,6 @@ public class Configuration extends AppCompatActivity {
     private String CONFIGURATION_EXIT = "Exit";
 
     private boolean notificationState;
-    private Intent intent;
     private Bundle toReturn;
     private int activity_result;
 
@@ -56,8 +55,6 @@ public class Configuration extends AppCompatActivity {
 
         Intent intent = new Intent();
         toReturn = new Bundle();
-        intent.putExtras(toReturn);
-        setResult(9998, intent);
 
         listView = (ListView) findViewById(R.id.configurationList);
         //ArrayAdapter<String> adapter = new ArrayAdapter<String>(Configuration.this, android.R.layout.simple_list_item_1, params);
@@ -115,6 +112,8 @@ public class Configuration extends AppCompatActivity {
 
                 }
                 else if(item_name.equals(getString(R.string.configuration_exit))){
+                    Intent intent = new Intent();
+                    intent.putExtras(toReturn);
                     setResult(9999, intent);
                     finish();
                 }
@@ -132,6 +131,8 @@ public class Configuration extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        Intent intent = new Intent();
+        intent.putExtras(toReturn);
         setResult(MainActivity.RESULT_CONFIGURATIONS_OK, intent);
         finish();
     }

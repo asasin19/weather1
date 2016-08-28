@@ -16,17 +16,20 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.gleb.first.ImageLoader;
 import com.example.gleb.first.MainActivity;
+import com.example.gleb.first.PictureRenderer;
 import com.example.gleb.first.R;
 import com.example.gleb.first.Weather.Weather;
 import com.example.gleb.first.cache.Cacher;
 
+import java.io.Serializable;
 import java.util.Timer;
 
 /**
  * Created by Gleb on 25.08.2016.
  */
-public class NotificationService extends Service {
+public class NotificationService extends Service{
 
     public static final int NOTIFICATION_WEATHER_ID = 9999001;
     public static final String SERVICE_TAG = "SERVICEDEBUGTAG";
@@ -35,11 +38,12 @@ public class NotificationService extends Service {
 
     private NotificationManager manager;
     private Timer timer;
-
-    private MyBinder binder = new MyBinder();
+    private ImageLoader loader;
     private Weather weather;
 
-    private String last_icon;
+
+    private MyBinder binder = new MyBinder();
+
     private String city;
 
     private boolean serviceState;
@@ -87,6 +91,7 @@ public class NotificationService extends Service {
     public void onCreate() {
         super.onCreate();
         weather = getWeather();
+        loader = new ImageLoader();
 
         Log.d(SERVICE_TAG, "onCreate");
         manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -98,15 +103,16 @@ public class NotificationService extends Service {
 
     private Handler getHandler() {
         return new Handler() {
+            private String last_icon;
+
             @Override
             public void handleMessage(Message msg) {
                 Bundle bundle = msg.getData();
                 String icon_name = bundle.getString(MainActivity.CONFIG_ICON_NAME);
-                Bitmap image = null;
-                if(last_icon == icon_name)
+
+                if(bundle.containsKey(Weather.WEATHER_ERROR_CODE) || last_icon.equals(icon_name))
                     return;
-                if ((image = Cacher.readImage(icon_name)) == null)
-                    return;
+                Bitmap image = loader.getBitmap(icon_name);
 
                 Notification.Builder builder = new Notification.Builder(getApplicationContext());
                 builder.setContentTitle(getString(R.string.service_notification_title))
@@ -118,7 +124,7 @@ public class NotificationService extends Service {
                         .setSmallIcon(R.drawable.ic_notify_weather)
                         .setContentIntent(PendingIntent.getActivity(getApplicationContext(), 0, new Intent(getApplicationContext(), MainActivity.class), PendingIntent.FLAG_CANCEL_CURRENT));
 
-                image = Bitmap.createScaledBitmap(image, 5, 5 ,false);
+                image = Bitmap.createScaledBitmap(image, 50, 50 ,false);
                 builder.setLargeIcon(image);
 
 
@@ -154,7 +160,8 @@ public class NotificationService extends Service {
     public boolean onUnbind(Intent intent) {
         if(!serviceState)
             stopSelf(NOTIFICATION_WEATHER_ID);
-        onNotations();
+        else
+            onNotations();
         Log.d(SERVICE_TAG, "onUnbind");
         return super.onUnbind(intent);
     }

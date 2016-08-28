@@ -34,15 +34,24 @@ public class Weather extends TimerTask {
     private final static String APIKEY_TEMPLATE = "appid=";
     private final static String UNITS_TEMPLATE = "&units=";
 
+    public static final String WEATHER_ERROR_CODE = "Error";
+    public static final String PREVIOUS_CITY = "prev_city";
+
+    //<<Private constants!>>
+    private static final String USER_AGENT = "User-Agent";
+    private static final String BROWSER_TYPE = "Mozilla/5.0";
+    private static final String REQUEST_METHOD = "GET";
+    private final static String API_KEY = "5b5375e5f95b02ad0553a181b2dd9857";
+    //<< >>
+
     private Context context;
+    private Handler handle;
 
     enum Units{
         Celsius,
         Kelvin,
         Fahrenheit
     }
-
-    private final static String API_KEY = "5b5375e5f95b02ad0553a181b2dd9857";
 
     private String city;
     private String api_key;
@@ -51,7 +60,6 @@ public class Weather extends TimerTask {
 
     private String prev_wright_city;
 
-    private Handler handle;
 
     public Weather(Context context , Handler handle, String city){
         this(context, handle);
@@ -78,8 +86,8 @@ public class Weather extends TimerTask {
             String tmp;
             URL url = new URL(api_string);
             HttpURLConnection con =  (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("GET");
-            con.setRequestProperty("User-Agent" , "Mozilla/5.0");
+            con.setRequestMethod(REQUEST_METHOD);
+            con.setRequestProperty(USER_AGENT , BROWSER_TYPE);
             BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
             StringBuffer page = new StringBuffer();
             String inputLine;
@@ -112,8 +120,8 @@ public class Weather extends TimerTask {
             prev_wright_city = new String(city);
 
         }catch (SecurityException | ParseException | IOException | NullPointerException pex){
-            data.putString("Error", pex.getMessage());
-            data.putString("prev_city", prev_wright_city);
+            data.putString(WEATHER_ERROR_CODE, pex.getMessage());
+            data.putString(PREVIOUS_CITY, prev_wright_city);
         } finally {
             Message h_msg = handle.obtainMessage();
             h_msg.setData(data);
