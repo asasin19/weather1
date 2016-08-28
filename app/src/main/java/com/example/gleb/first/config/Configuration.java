@@ -8,6 +8,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -15,6 +16,8 @@ import android.widget.BaseAdapter;
 import android.widget.CompoundButton;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.gleb.first.MainActivity;
@@ -93,6 +96,8 @@ public class Configuration extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 notificationState = b;
+                ((TextView) compoundButton.findViewById(R.id.smallConfigText)).setText(b?getString(R.string.desription_setting_notifications_on):getString(R.string.desription_setting_notifications_off));
+                Log.d("IN_CHECKED_LISTENER", "State = " + b);
                 toReturn.putBoolean(MainActivity.CONFIG_NOTIFICATION_STATE, notificationState);
             }
         }, Items.ITEM_SWITCH);

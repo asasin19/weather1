@@ -15,7 +15,7 @@
     <!-- -->
 
     <!-- Settings menu -->
-    <string name="configuration_volume">Громкость</string>
+    <string name="configuration_volume">Уведомления</string>
     <string name="configuration_language">Язык</string>
     <string name="configuration_data">Данные</string>
     <string name="configuration_exit">Выход</string>

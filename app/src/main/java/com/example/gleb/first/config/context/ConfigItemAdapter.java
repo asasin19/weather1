@@ -32,6 +32,7 @@ public class ConfigItemAdapter extends BaseAdapter{
     private LayoutInflater context;
 
     private Switch switch_item_switch;
+    private CompoundButton.OnCheckedChangeListener switch_listener;
 
 
     public ConfigItemAdapter(@NonNull Context context , List<ConfigItem> items) {
@@ -59,8 +60,10 @@ public class ConfigItemAdapter extends BaseAdapter{
     public void setOnCheckedListener(CompoundButton.OnCheckedChangeListener listener, String item){
         switch (item){
             case Items.ITEM_SWITCH:{
-                if(switch_item_switch == null)
+                if(switch_item_switch == null) {
+                    switch_listener = listener;
                     return;
+                }
                 switch_item_switch.setOnCheckedChangeListener(listener);
                 break;
             }
@@ -97,6 +100,9 @@ public class ConfigItemAdapter extends BaseAdapter{
 
                 switch_item_switch = (Switch)view.findViewById(R.id.config_switch);
                 switch_item_switch.setChecked(item1.getSwitch());
+
+                if(switch_listener != null)
+                    switch_item_switch.setOnCheckedChangeListener(switch_listener);
 
                 Log.d("CONFIG", "IN CONFIG SWITCH ITEM. ID = " + i);
                 break;

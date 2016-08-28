@@ -259,14 +259,15 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
         if(state != null) {
             notifiaction_active = state;
             service.activeService(notifiaction_active);
+            Cacher.cacheConfig(FOLDER_CONFIG, CONFIG_NOTIFICATION_STATE, notifiaction_active + "");
         }
+
 
         super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         Properties properties = new Properties();
         properties.setProperty(CONFIG_CITY, cityLine.getText().toString());
         properties.setProperty(CONFIG_TEMPERATURE, tempView.getText().toString());
@@ -276,6 +277,7 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
         properties.setProperty(CONFIG_ICON_NAME, icon_name_weather);
         properties.setProperty(CONFIG_LOCALE, Locale.getDefault().getLanguage());
         properties.setProperty(CONFIG_NOTIFICATION_STATE, notifiaction_active + "");
+        super.onDestroy();
         Cacher.cacheConfig(FOLDER_CONFIG, properties);
         Cacher.saveAllConfigs();
 
@@ -286,6 +288,11 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
     protected void onStart() {
         super.onStart();
 
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
     }
 
     @Override
