@@ -8,7 +8,7 @@
 
 
     <!-- Settings menu -->
-    <string name="configuration_volume">Notifications</string>
+    <string name="configuration_notifications">Notifications</string>
     <string name="configuration_language">Language</string>
     <string name="configuration_data">Data</string>
     <string name="configuration_exit">Exit</string>

@@ -44,7 +44,6 @@ public class Configuration extends AppCompatActivity {
 
     private boolean notificationState;
     private Bundle toReturn;
-    private int activity_result;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,48 +55,41 @@ public class Configuration extends AppCompatActivity {
         else
             notificationState = Boolean.parseBoolean(tmp);
 
-        Intent intent = new Intent();
-        toReturn = new Bundle();
 
+        toReturn = new Bundle();
         listView = (ListView) findViewById(R.id.configurationList);
-        //ArrayAdapter<String> adapter = new ArrayAdapter<String>(Configuration.this, android.R.layout.simple_list_item_1, params);
 
     }
 
-    public void initLanguageMenu(){
-        CONFIGURATION_NOTIFICATIONS = getString(R.string.configuration_volume);
+    private void initLanguageMenu(){
+        CONFIGURATION_NOTIFICATIONS = getString(R.string.configuration_notifications);
         CONFIGURATION_LANGUAGE = getString(R.string.configuration_language);
         CONFIGURATION_DATA = getString(R.string.configuration_data);
         CONFIGURATION_EXIT = getString(R.string.configuration_exit);
     }
 
-    public void configSelected(View view){
-        Toast toast = Toast.makeText(getApplicationContext(), view.getId() + "", Toast.LENGTH_LONG);
-        toast.show();
-    }
 
     private List<ConfigItem> initConfigList(){
         List<ConfigItem> list = new ArrayList<ConfigItem>();
 
-        list.add(new ConfigItemSwitch(CONFIGURATION_NOTIFICATIONS, notificationState?getString(R.string.desription_setting_notifications_on):getString(R.string.desription_setting_notifications_off) , notificationState));
-        list.add(new ConfigItem(CONFIGURATION_LANGUAGE, getBaseContext().getResources().getConfiguration().locale.getDisplayName()));
-        list.add(new ConfigItemCheckBox(CONFIGURATION_DATA, "Data Parametrs", false));
-        list.add(new ConfigItemIcon(CONFIGURATION_EXIT, "Exit from application"));
+        list.add(new ConfigItemSwitch(getString(R.string.configuration_notifications), notificationState?getString(R.string.desription_setting_notifications_on):getString(R.string.desription_setting_notifications_off) , notificationState));
+        list.add(new ConfigItem(getString(R.string.configuration_language), getBaseContext().getResources().getConfiguration().locale.getDisplayName()));
+        list.add(new ConfigItemCheckBox(getString(R.string.configuration_data), "Data Parametrs", false));
+        list.add(new ConfigItemIcon(getString(R.string.configuration_exit), "Exit from application"));
         return list;
     }
 
     @Override
     protected void onStart() {
 
-        initLanguageMenu();
+        //initLanguageMenu();
         final ConfigItemAdapter adapter = new ConfigItemAdapter(Configuration.this, initConfigList());
         listView.setAdapter(adapter);
         adapter.setOnCheckedListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 notificationState = b;
-                ((TextView) compoundButton.findViewById(R.id.smallConfigText)).setText(b?getString(R.string.desription_setting_notifications_on):getString(R.string.desription_setting_notifications_off));
-                Log.d("IN_CHECKED_LISTENER", "State = " + b);
+                ((TextView)((View)compoundButton.getParent()).findViewById(R.id.smallConfigText)).setText(b ? getString(R.string.desription_setting_notifications_on) : getString(R.string.desription_setting_notifications_off));
                 toReturn.putBoolean(MainActivity.CONFIG_NOTIFICATION_STATE, notificationState);
             }
         }, Items.ITEM_SWITCH);
@@ -107,7 +99,7 @@ public class Configuration extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 String item_name = adapter.getItemById(i).getLargeText();
 
-                if(item_name.equals(getString(R.string.configuration_volume))){
+                if(item_name.equals(getString(R.string.configuration_notifications))){
 
                 }
                 else if(item_name.equals(getString(R.string.configuration_language))){
@@ -119,7 +111,7 @@ public class Configuration extends AppCompatActivity {
                 else if(item_name.equals(getString(R.string.configuration_exit))){
                     Intent intent = new Intent();
                     intent.putExtras(toReturn);
-                    setResult(9999, intent);
+                    setResult(MainActivity.RESULT_APPLICATION_EXIT, intent);
                     finish();
                 }
             }

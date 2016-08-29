@@ -5,7 +5,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.Binder;
 import android.os.Bundle;
@@ -18,12 +17,9 @@ import android.widget.Toast;
 
 import com.example.gleb.first.ImageLoader;
 import com.example.gleb.first.MainActivity;
-import com.example.gleb.first.PictureRenderer;
 import com.example.gleb.first.R;
 import com.example.gleb.first.Weather.Weather;
-import com.example.gleb.first.cache.Cacher;
 
-import java.io.Serializable;
 import java.util.Timer;
 
 /**
@@ -103,14 +99,16 @@ public class NotificationService extends Service{
 
     private Handler getHandler() {
         return new Handler() {
-            private String last_icon;
+            private String last_icon = "";
 
             @Override
             public void handleMessage(Message msg) {
                 Bundle bundle = msg.getData();
                 String icon_name = bundle.getString(MainActivity.CONFIG_ICON_NAME);
 
-                if(bundle.containsKey(Weather.WEATHER_ERROR_CODE) || last_icon.equals(icon_name))
+                if(bundle.containsKey(Weather.WEATHER_ERROR_CODE)
+                        || icon_name == null
+                        || last_icon.equals(icon_name))
                     return;
                 Bitmap image = loader.getBitmap(icon_name);
 
@@ -124,7 +122,7 @@ public class NotificationService extends Service{
                         .setSmallIcon(R.drawable.ic_notify_weather)
                         .setContentIntent(PendingIntent.getActivity(getApplicationContext(), 0, new Intent(getApplicationContext(), MainActivity.class), PendingIntent.FLAG_CANCEL_CURRENT));
 
-                image = Bitmap.createScaledBitmap(image, 50, 50 ,false);
+                image = Bitmap.createScaledBitmap(image, 300, 300 ,true);
                 builder.setLargeIcon(image);
 
 

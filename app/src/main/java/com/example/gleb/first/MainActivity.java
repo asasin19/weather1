@@ -14,6 +14,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -108,6 +109,7 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
                 if(keyEvent.getAction() == KeyEvent.ACTION_DOWN && i == KeyEvent.KEYCODE_ENTER){
                     view.clearFocus();
+                    getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
                     return true;
                 }
                 return false;
@@ -159,6 +161,7 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
                     notifiaction_active = true;
                 else
                     notifiaction_active = Boolean.parseBoolean(properties.getProperty(CONFIG_NOTIFICATION_STATE));
+                weather.setCity(cityLine.getText().toString());
             }
         }.execute();
 

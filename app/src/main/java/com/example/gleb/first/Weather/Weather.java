@@ -5,10 +5,8 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.widget.TextView;
 
 import com.example.gleb.first.MainActivity;
-import com.example.gleb.first.R;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -19,9 +17,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Properties;
 import java.util.TimerTask;
 
 /**
@@ -69,7 +65,6 @@ public class Weather extends TimerTask {
     public Weather(Context context , Handler handle){
         setUnits(Units.Celsius);
 
-        city = context.getString(R.string.saved_city);
         api_key = API_KEY;
         createRequest();
 
