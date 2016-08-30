@@ -8,7 +8,10 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.gleb.first.MainActivity"
-    android:focusableInTouchMode="true">
+    android:descendantFocusability="beforeDescendants"
+    android:focusableInTouchMode="true"
+    android:focusable="true"
+    android:id="@+id/main_layout">
 
     <TextView
         android:layout_width="150dp"
@@ -106,6 +109,7 @@
         android:layout_alignLeft="@+id/tempView"
         android:layout_alignStart="@+id/tempView"
         android:textSize="25dp"
-        android:inputType="textPersonName" />
+        android:inputType="textPersonName" >
+    </EditText>
 
 </RelativeLayout>

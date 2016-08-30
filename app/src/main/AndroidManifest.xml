@@ -27,6 +27,10 @@
             android:name=".language.Language"
             android:label="@string/title_activity_language"/>
 
+        <activity
+            android:name=".config.preference.PreferenceActivity"
+            android:label="Configs" />
+
         <service android:name=".service.NotificationService"
             android:exported="true"
             android:enabled="true"

@@ -7,9 +7,10 @@ android {
     defaultConfig {
         applicationId "com.example.gleb.first"
         minSdkVersion 15
-        targetSdkVersion 24
+        targetSdkVersion 20
         versionCode 1
         versionName "1.0"
+        vectorDrawables.useSupportLibrary = true
     }
     buildTypes {
         release {

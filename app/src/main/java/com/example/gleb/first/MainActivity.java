@@ -3,10 +3,12 @@ package com.example.gleb.first;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -24,6 +27,8 @@ import com.example.gleb.first.Weather.Weather;
 import com.example.gleb.first.Weather.WeatherInterface;
 import com.example.gleb.first.cache.Cacher;
 import com.example.gleb.first.config.Configuration;
+import com.example.gleb.first.config.preference.PreferenceActivity;
+import com.example.gleb.first.config.preference.PreferenceMainSettingsFragment;
 import com.example.gleb.first.service.NotificationService;
 
 import java.util.Locale;
@@ -68,8 +73,12 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
 
     private String prev_wright_city;
     private String icon_name_weather;
-    private boolean notifiaction_active;
+    private InputMethodManager imputManager;
     private NotificationService service;
+    private SharedPreferences sharedPreferences;
+
+    private boolean notifiaction_active;
+    private boolean old_menu_active;
 
 
     public static final long UPDATE_FREQ = 80000;
@@ -78,6 +87,9 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        imputManager = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         serviceConnection = new ServiceConnection() {
             @Override
@@ -126,6 +138,7 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
                     }
                     weather.setCity(cityLine.getText().toString());
                     new Thread(weather).start();
+                    imputManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
                 }
             }
         });
@@ -201,10 +214,10 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
     }
 
     private void initMultiLanguage(){
-        minTempText.setText(getString(R.string.Min_tmp));
-        maxTempText.setText(getString(R.string.Max_tmp));
-        pressureText.setText(getString(R.string.Pressure));
-        menu.getItem(0).setTitle(getString(R.string.menu_item_settings));
+        minTempText.setText(R.string.Min_tmp);
+        maxTempText.setText(R.string.Max_tmp);
+        pressureText.setText(R.string.Pressure);
+        menu.getItem(0).setTitle(R.string.menu_item_settings);
 
     }
 
@@ -225,14 +238,19 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
         switch (item.getItemId())
         {
             case R.id.Settings:
-                Bundle bundle = new Bundle();
-                Intent intent = new Intent(this, Configuration.class);
-                intent.putExtras(bundle);
-                startActivityForResult(intent, RESULT_CONFIGURATIONS_OK);
+                if(old_menu_active)
+                    startActivityForResult(new Intent(getApplicationContext(), Configuration.class), RESULT_CONFIGURATIONS_OK);
+                else
+                    startActivityForResult(new Intent(getApplicationContext(), PreferenceActivity.class), RESULT_CONFIGURATIONS_OK);
+
+                break;
+
+            case R.id.Settings_style:
+                item.setChecked(!item.isChecked());
+                old_menu_active = item.isChecked();
                 break;
             case R.id.Exit:
                 finish();
@@ -261,6 +279,7 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
         Log.d(CONFIG_NOTIFICATION_STATE, state.toString());
         if(state != null) {
             notifiaction_active = state;
+            Toast.makeText(getApplicationContext(), "U DID IT!", Toast.LENGTH_SHORT).show();
             service.activeService(notifiaction_active);
             Cacher.cacheConfig(FOLDER_CONFIG, CONFIG_NOTIFICATION_STATE, notifiaction_active + "");
         }

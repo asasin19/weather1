@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <SwitchPreference
+        android:key="Notification"
+        android:title="@string/configuration_notifications"
+        android:summary="@string/desription_setting_notifications_off"
+        android:summaryOff="@string/desription_setting_notifications_off"
+        android:summaryOn="@string/desription_setting_notifications_on"/>
+
+
+    <ListPreference
+        android:key="Language"
+        android:title="@string/configuration_language"
+        android:summary="@string/configuration_language"
+        android:entries="@array/entries"
+        android:entryValues="@array/values_loc" />
+
+
+
+
+
+    <CheckBoxPreference
+        android:key="Data"
+        android:title="@string/configuration_data"/>
+
+
+    <Preference
+        android:key="Exit"
+        android:title="@string/configuration_exit"
+        android:summary="@string/configuration_exit" />
+
+
+
+</PreferenceScreen>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="entries">
+        <item>Русский</item>
+        <item>English</item>
+        <item>Українська</item>
+    </string-array>
+
+    <string-array name="values_loc">
+        <item>ru</item>
+        <item>en</item>
+        <item>uk</item>
+    </string-array>
+</resources>

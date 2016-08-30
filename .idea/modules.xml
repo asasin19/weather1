@@ -6,6 +6,7 @@
       <module fileurl="file://$PROJECT_DIR$/first.iml" filepath="$PROJECT_DIR$/first.iml" />
       <module fileurl="file://$PROJECT_DIR$/json-simple-1.1.1/json-simple-1.1.1.iml" filepath="$PROJECT_DIR$/json-simple-1.1.1/json-simple-1.1.1.iml" />
       <module fileurl="file://$PROJECT_DIR$/json-simple-1.1.1_updated/json-simple-1.1.1_updated.iml" filepath="$PROJECT_DIR$/json-simple-1.1.1_updated/json-simple-1.1.1_updated.iml" />
+      <module fileurl="file://$PROJECT_DIR$/weather1.iml" filepath="$PROJECT_DIR$/weather1.iml" />
     </modules>
   </component>
 </project>

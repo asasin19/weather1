@@ -2,9 +2,14 @@
     <string name="app_name">Погода</string>
     <string name="openweather_apiID">5b5375e5f95b02ad0553a181b2dd9857</string>
     <string name="saved_city">Киев</string>
+
+
+    <!-- Title -->
     <string name="title_activity_control">Управление</string>
     <string name="title_activity_configuration">Конфигурации</string>
     <string name="title_activity_language">Выбор языка</string>
+    <string name="title_activity_perference">Конфигурация</string>
+    <!-- -->
 
 
     <!-- Main Activity -->
@@ -24,6 +29,7 @@
 
     <!-- Menu items -->
     <string name="menu_item_settings">Настройки</string>
+    <string name="menu_item_settings_style">Старое меню</string>
     <string name="menu_item_exit">Выход</string>
     <!-- -->
 
@@ -31,6 +37,14 @@
     <string name="service_notification_title">Погода изменилась! Вы видели? Видели это?</string>
     <string name="service_notification_ticker">Привет, видел погоду сегодня?</string>
     <string name="service_notification_contentText">Текущая температура </string>
+    <!-- -->
+
+    <!-- Text Interpretate -->
+    <string name="desription_setting_notifications_on">Уведомления включены</string>
+    <string name="desription_setting_notifications_off">Уведомления были отключены</string>
+    <string name="off">Вык</string>
+    <string name="on">Вкл</string>
+    <string name="language">Русский</string>
     <!-- -->
 
 </resources>

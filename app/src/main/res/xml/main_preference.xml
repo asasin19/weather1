@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <SwitchPreference
+        android:key="@string/configuration_notifications"
+        android:title="@string/configuration_notifications"
+        android:summary="@string/desription_setting_notifications_off"
+        />
+
+    <ListPreference
+        android:key="@string/configuration_language"
+        android:entries="@array/entries"
+        android:entryValues="@array/values_loc"
+        />
+
+
+</PreferenceScreen>

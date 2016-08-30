@@ -1,19 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item
-        android:id="@+id/Settings"
+
+    <group
+        android:id="@+id/Settings_Group"
         android:orderInCategory="1"
-        android:title="@string/menu_item_settings"
-        />
+        >
+        <item
+            android:id="@+id/Settings"
+            android:orderInCategory="1"
+            android:title="@string/menu_item_settings"
+            />
 
+        <item
+            android:checkable="true"
+            android:id="@+id/Settings_style"
+            android:title="@string/menu_item_settings_style" />
 
-    <item
-        android:id="@+id/Exit"
+    </group>
+
+    <group
         android:orderInCategory="2"
-        android:title="@string/menu_item_exit"
-        android:icon="@android:drawable/ic_menu_close_clear_cancel"
-        />
+        android:id="@+id/Settings_System"
+        >
+        <item
+            android:id="@+id/Exit"
+            android:title="@string/menu_item_exit"
+            android:icon="@android:drawable/ic_menu_close_clear_cancel"
+            />
+
+    </group>
+
+
 
     <!--
     <item
