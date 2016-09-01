@@ -44,5 +44,11 @@
     <string name="desription_setting_notifications_on">Notification is active</string>
     <!-- -->
 
+    <string name="cloudimage">CloudImage</string>
+    <string name="nav_menu_header_text">My lovely weather app)</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="navigation_category_name">Last cities</string>
+
 
 </resources>

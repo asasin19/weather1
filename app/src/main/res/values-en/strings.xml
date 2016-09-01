@@ -43,6 +43,11 @@
     <string name="off">OFF</string>
     <string name="on">ON</string>
     <string name="language">English</string>
+    <string name="cloudimage">Cloud image</string>
+    <string name="nav_menu_header_text">My lovely weather app)</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="navigation_category_name">Last cities</string>
     <!-- -->
 
 </resources>

@@ -1,5 +1,7 @@
 package com.example.gleb.first;
 
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -9,6 +11,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.design.widget.NavigationView;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -28,7 +31,6 @@ import com.example.gleb.first.Weather.WeatherInterface;
 import com.example.gleb.first.cache.Cacher;
 import com.example.gleb.first.config.Configuration;
 import com.example.gleb.first.config.preference.PreferenceActivity;
-import com.example.gleb.first.config.preference.PreferenceMainSettingsFragment;
 import com.example.gleb.first.service.NotificationService;
 
 import java.util.Locale;
@@ -91,12 +93,13 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
         imputManager = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
+
         serviceConnection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName componentName, IBinder iBinder) { service = ((NotificationService.MyBinder) iBinder).getService();}
             @Override
-            public void onServiceDisconnected(ComponentName componentName) {}};
-
+            public void onServiceDisconnected(ComponentName componentName) {}
+        };
 
         //Dynamic views init
         minTempView = (TextView) findViewById(R.id.minTempView);
@@ -217,7 +220,7 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
         minTempText.setText(R.string.Min_tmp);
         maxTempText.setText(R.string.Max_tmp);
         pressureText.setText(R.string.Pressure);
-        menu.getItem(0).setTitle(R.string.menu_item_settings);
+        //menu.getItem(0).setTitle(R.string.menu_item_settings);
 
     }
 
@@ -327,6 +330,10 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
         android.content.res.Configuration conf = new android.content.res.Configuration();
         conf.locale = locale;
         getBaseContext().getResources().updateConfiguration(conf, getBaseContext().getResources().getDisplayMetrics());
+
+    }
+
+    public void contextMenuClick(View view){
 
     }
 }

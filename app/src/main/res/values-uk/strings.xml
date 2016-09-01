@@ -40,6 +40,11 @@
     <string name="off">Вик</string>
     <string name="on">Вкл</string>
     <string name="language">Українська</string>
+    <string name="cloudimage">Зображення хмарки</string>
+    <string name="nav_menu_header_text">Найгарніший погодний додаток)</string>
+    <string name="navigation_drawer_open">Відкрити маляра навігаціі</string>
+    <string name="navigation_drawer_close">Закрити маляра навігаціі</string>
+    <string name="navigation_category_name">Останні міста</string>
     <!-- -->
 
 </resources>

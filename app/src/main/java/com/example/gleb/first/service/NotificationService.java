@@ -6,6 +6,8 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.Icon;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
@@ -116,7 +118,7 @@ public class NotificationService extends Service{
                 builder.setContentTitle(getString(R.string.service_notification_title))
                         .setAutoCancel(true)
                         .setTicker(getString(R.string.service_notification_ticker))
-                        .setContentText(getString(R.string.service_notification_contentText) + bundle.getString(MainActivity.CONFIG_TEMPERATURE))
+                        .setContentText(getString(R.string.service_notification_contentText) + " " + bundle.getString(MainActivity.CONFIG_TEMPERATURE))
                         .setWhen(System.currentTimeMillis())
                         .setDefaults(Notification.DEFAULT_ALL)
                         .setSmallIcon(R.drawable.ic_notify_weather)

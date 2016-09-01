@@ -109,7 +109,7 @@ public class Weather extends TimerTask {
 
             data.putString(MainActivity.CONFIG_ICON_NAME, jobj.get("icon").toString());
             data.putString(MainActivity.CONFIG_TEMPERATURE ,temp.substring(0,trim) + " °C");
-            data.putString(MainActivity.CONFIG_PRESSURE,pressure.substring(0,trim));
+            data.putString(MainActivity.CONFIG_PRESSURE,pressure);
             data.putString(MainActivity.CONFIG_MAX_TEMPERATURE, max_tmp.substring(0,trim) + " °C");
             data.putString(MainActivity.CONFIG_MIN_TEMPERATURE, min_tmp.substring(0,trim) + " °C");
             prev_wright_city = new String(city);

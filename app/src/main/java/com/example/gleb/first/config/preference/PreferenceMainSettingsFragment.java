@@ -30,14 +30,17 @@ public class PreferenceMainSettingsFragment extends PreferenceFragment implement
     public static final String PREFERENCE_DATA = "Data";
     public static final String PREFERENCE_EXIT = "Exit";
 
+    public static final String ENGLISH = "English";
+    public static final String RUSSIAN = "Русский";
+    public static final String UKRAINIAN = "Українська";
+
     private SwitchPreference switchPreference;
     private ListPreference listPreference;
     private CheckBoxPreference checkBoxPreference;
     private Preference preference;
 
     private String currentLang;
-    private Intent data;
-    private boolean resultSeted;
+    private int result;
 
 
     @Override
@@ -65,9 +68,11 @@ public class PreferenceMainSettingsFragment extends PreferenceFragment implement
 
 
         if(name.equals(getString(R.string.configuration_exit))){
-            data = new Intent();
-            getActivity().setResult(MainActivity.RESULT_APPLICATION_EXIT,data);
-            resultSeted = true;
+            Intent intent = new Intent();
+            Bundle bundle = new Bundle();
+            bundle.putBoolean(MainActivity.CONFIG_NOTIFICATION_STATE, switchPreference.isChecked());
+            intent.putExtras(bundle);
+            getActivity().setResult(MainActivity.RESULT_APPLICATION_EXIT, intent);
             getActivity().finish();
         }
         else if(name.equals(getString(R.string.configuration_notifications))){
@@ -78,6 +83,18 @@ public class PreferenceMainSettingsFragment extends PreferenceFragment implement
         }
 
         return true;
+    }
+
+    public boolean getNotificationState(){
+        return switchPreference.isChecked();
+    }
+
+    public void setResult(int result) {
+        this.result = result;
+    }
+
+    public int getResult(){
+        return result;
     }
 
     private void changeLocale(Locale locale){
@@ -100,7 +117,21 @@ public class PreferenceMainSettingsFragment extends PreferenceFragment implement
         switchPreference.setSwitchTextOff(R.string.off);
         switchPreference.setSwitchTextOn(R.string.on);
 
-        listPreference.setSummary(R.string.language);
+        String lang = getString(R.string.language);
+        listPreference.setSummary(lang);
+        switch (lang){
+            case ENGLISH:
+                listPreference.setValueIndex(1);
+                break;
+
+            case RUSSIAN:
+                listPreference.setValueIndex(0);
+                break;
+
+            case UKRAINIAN:
+                listPreference.setValueIndex(2);
+                break;
+        }
 
         checkBoxPreference.setSummary(R.string.configuration_data);
     }
@@ -123,16 +154,6 @@ public class PreferenceMainSettingsFragment extends PreferenceFragment implement
 
     @Override
     public void onDestroy() {
-        Bundle bundle = new Bundle();
-        bundle.putBoolean(MainActivity.CONFIG_NOTIFICATION_STATE, switchPreference.isChecked());
-        if(!resultSeted) {
-            data = new Intent();
-            data.putExtras(bundle);
-            getActivity().setResult(MainActivity.RESULT_CONFIGURATIONS_OK, data);
-            getActivity().finish();
-        }
-
-
         super.onDestroy();
     }
 }

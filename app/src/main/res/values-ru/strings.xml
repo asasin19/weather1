@@ -45,6 +45,11 @@
     <string name="off">Вык</string>
     <string name="on">Вкл</string>
     <string name="language">Русский</string>
+    <string name="cloudimage">Изображение облака</string>
+    <string name="nav_menu_header_text">Мое любимое погодное приложение)</string>
+    <string name="navigation_drawer_open">Открыть навигационный отрисовщик</string>
+    <string name="navigation_drawer_close">Закрыть навигационный отрисовщик</string>
+    <string name="navigation_category_name">Последние города</string>
     <!-- -->
 
 </resources>
