@@ -79,6 +79,7 @@ public class MainActivityNav extends AppCompatActivity {
     private TextView minTempText;
     private TextView maxTempText;
     private TextView pressureText;
+    private TextView navHeaderText;
     //
 
     private Weather weather;
@@ -131,12 +132,12 @@ public class MainActivityNav extends AppCompatActivity {
         minTempText = (TextView) findViewById(R.id.minTempText);
         maxTempText = (TextView) findViewById(R.id.maxTempText);
         pressureText = (TextView) findViewById(R.id.pressureText);
+
         //
 
         weather = new Weather(getApplicationContext() , handlerInit());
         cityLine.setOnKeyListener(listenersInitiator.getOnKeyListener());
         cityLine.setOnFocusChangeListener(listenersInitiator.getOnFocusChangeListener());
-        mainTasks.getCachTask().execute();
 
 
         //FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -150,9 +151,13 @@ public class MainActivityNav extends AppCompatActivity {
         toggle.syncState();
 
         navigationView = (NavigationView) findViewById(R.id.nav_view);
+
+        navHeaderText = (TextView)navigationView.getHeaderView(0).findViewById(R.id.nav_menu_header_textView);
         navigationView.setNavigationItemSelectedListener(listenersInitiator.getNavigationItemSelectedListener());
         subMenu = navigationView.getMenu().addSubMenu(R.string.navigation_category_name);
         navigationView.setOnClickListener(listenersInitiator.getOnClickListener());
+
+        mainTasks.getCachTask().execute();
 
         startService(new Intent(getApplicationContext(), NotificationService.class));
         final Timer timer = new Timer();
@@ -253,6 +258,7 @@ public class MainActivityNav extends AppCompatActivity {
         minTempText.setText(R.string.Min_tmp);
         maxTempText.setText(R.string.Max_tmp);
         pressureText.setText(R.string.Pressure);
+        navHeaderText.setText(R.string.nav_menu_header_text);
         initMultiLanguageNavigationMenu();
         //menu.getItem(0).setTitle(R.string.menu_item_settings);
 

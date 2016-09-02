@@ -9,6 +9,7 @@
         android:id="@+id/tempView"
         android:gravity="center"
         android:textSize="40dp"
+        android:layout_marginTop="30dp"
         android:textColor="#000000"
         android:textStyle="bold|italic"
         android:layout_alignParentTop="true"
@@ -20,12 +21,12 @@
         android:layout_height="wrap_content"
         android:id="@+id/weatherImage"
         android:src="@android:drawable/ic_menu_close_clear_cancel"
-        android:layout_marginLeft="75dp"
-        android:layout_marginStart="75dp"
+        android:layout_marginLeft="50dp"
+        android:layout_marginStart="50dp"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/tempView"
         android:layout_toEndOf="@+id/tempView"
-        android:layout_marginTop="33dp" />
+        android:layout_marginTop="75dp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -33,7 +34,7 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/Min_tmp"
         android:id="@+id/minTempText"
-        android:layout_alignBottom="@+id/pressureView"
+        android:layout_below="@+id/pressureView"
         android:layout_alignLeft="@+id/maxTempView"
         android:layout_alignStart="@+id/maxTempView" />
 
@@ -75,7 +76,7 @@
         android:text="@string/Pressure"
         android:id="@+id/pressureText"
         android:textSize="30dp"
-        android:layout_alignTop="@+id/maxTempView"
+        android:layout_alignTop="@+id/maxTempText"
         android:layout_alignLeft="@+id/pressureView"
         android:layout_alignStart="@+id/pressureView" />
 
@@ -86,12 +87,11 @@
         android:text="Large Text"
         android:id="@+id/pressureView"
         android:textSize="30dp"
-        android:layout_marginRight="29dp"
-        android:layout_marginEnd="29dp"
-        android:layout_below="@+id/pressureText"
-        android:layout_alignRight="@+id/cityLineEdit"
-        android:layout_alignEnd="@+id/cityLineEdit"
-        android:layout_marginTop="9dp" />
+        android:layout_marginRight="74dp"
+        android:layout_marginEnd="74dp"
+        android:layout_below="@+id/maxTempView"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 
     <EditText
         android:layout_width="300dp"
@@ -99,9 +99,8 @@
         android:id="@+id/cityLineEdit"
         android:text="@string/saved_city"
         android:textSize="25dp"
-        android:layout_toRightOf="@+id/weatherImage"
-        android:layout_toEndOf="@+id/weatherImage"
-        android:layout_marginTop="95dp"
-        android:focusableInTouchMode="true" />
+        android:focusableInTouchMode="true"
+        android:layout_alignBottom="@+id/tempView"
+        android:layout_alignParentRight="true" />
 
 </RelativeLayout>

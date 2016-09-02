@@ -110,7 +110,8 @@ public class NotificationService extends Service{
 
                 if(bundle.containsKey(Weather.WEATHER_ERROR_CODE)
                         || icon_name == null
-                        || last_icon.equals(icon_name))
+                        || last_icon.equals(icon_name)
+                        )
                     return;
                 Bitmap image = loader.getBitmap(icon_name);
 
@@ -121,7 +122,7 @@ public class NotificationService extends Service{
                         .setContentText(getString(R.string.service_notification_contentText) + " " + bundle.getString(MainActivity.CONFIG_TEMPERATURE))
                         .setWhen(System.currentTimeMillis())
                         .setDefaults(Notification.DEFAULT_ALL)
-                        .setSmallIcon(R.drawable.ic_notify_weather)
+                        .setSmallIcon(R.drawable.ic_notify_weather_2)
                         .setContentIntent(PendingIntent.getActivity(getApplicationContext(), 0, new Intent(getApplicationContext(), MainActivity.class), PendingIntent.FLAG_CANCEL_CURRENT));
 
                 image = Bitmap.createScaledBitmap(image, 300, 300 ,true);
