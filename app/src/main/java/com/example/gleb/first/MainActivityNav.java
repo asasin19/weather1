@@ -34,6 +34,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.gleb.first.Weather.Weather;
+import com.example.gleb.first.Weather.context.OpenWeatherLight;
 import com.example.gleb.first.cache.Cacher;
 import com.example.gleb.first.config.Configuration;
 import com.example.gleb.first.config.preference.PreferenceActivity;
@@ -135,7 +136,7 @@ public class MainActivityNav extends AppCompatActivity {
 
         //
 
-        weather = new Weather(getApplicationContext() , handlerInit());
+        weather = new Weather(getApplicationContext() , handlerInit(), new OpenWeatherLight());
         cityLine.setOnKeyListener(listenersInitiator.getOnKeyListener());
         cityLine.setOnFocusChangeListener(listenersInitiator.getOnFocusChangeListener());
 

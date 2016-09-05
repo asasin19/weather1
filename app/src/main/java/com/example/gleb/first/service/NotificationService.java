@@ -21,6 +21,7 @@ import com.example.gleb.first.ImageLoader;
 import com.example.gleb.first.MainActivity;
 import com.example.gleb.first.R;
 import com.example.gleb.first.Weather.Weather;
+import com.example.gleb.first.Weather.context.OpenWeatherLight;
 
 import java.util.Timer;
 
@@ -108,10 +109,7 @@ public class NotificationService extends Service{
                 Bundle bundle = msg.getData();
                 String icon_name = bundle.getString(MainActivity.CONFIG_ICON_NAME);
 
-                if(bundle.containsKey(Weather.WEATHER_ERROR_CODE)
-                        || icon_name == null
-                        || last_icon.equals(icon_name)
-                        )
+                if(last_icon.equals(icon_name))
                     return;
                 Bitmap image = loader.getBitmap(icon_name);
 
@@ -141,7 +139,7 @@ public class NotificationService extends Service{
     private Weather getWeather(){
         if(weather != null)
             return weather;
-        return (weather = new Weather(getApplicationContext(),getHandler(), "Kyiv" ));
+        return (weather = new Weather(getApplicationContext(),getHandler(),new OpenWeatherLight(), "Kyiv"));
     }
 
     @Override

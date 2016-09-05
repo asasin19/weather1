@@ -5,8 +5,13 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 import com.example.gleb.first.MainActivity;
+import com.example.gleb.first.Weather.context.WeatherCalculatorInterface;
+import com.example.gleb.first.Weather.context.WeatherInternetAccessInterface;
+import com.example.gleb.first.Weather.models.WeatherModel;
+import com.example.gleb.first.Weather.models.WeatherSimpleModel;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -18,147 +23,160 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.Key;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.TimerTask;
 
 /**
  * Created by Gleb on 20.08.2016.
  */
 public class Weather extends TimerTask {
-
-    public static final String API_JSON = "http://api.openweathermap.org/data/2.5/weather?";
-    private final static String CITY_TEMPLATE = "q=";
-    private final static String APIKEY_TEMPLATE = "appid=";
-    private final static String UNITS_TEMPLATE = "&units=";
-
-    public static final String WEATHER_ERROR_CODE = "Error";
-    public static final String PREVIOUS_CITY = "prev_city";
-
-    //<<Private constants!>>
-    private static final String USER_AGENT = "User-Agent";
-    private static final String BROWSER_TYPE = "Mozilla/5.0";
-    private static final String REQUEST_METHOD = "GET";
-    private final static String API_KEY = "5b5375e5f95b02ad0553a181b2dd9857";
-    //<< >>
+    public static final String WEATHER_DEBUG_TAG = "WEATHERDEBUGTAG";
 
     private Context context;
     private Handler handle;
 
-    enum Units{
+    public enum Units{
         Celsius,
         Kelvin,
         Fahrenheit
     }
 
-    private String city;
-    private String api_key;
-    private String api_string;
-    private String units;
+    enum Types{
+        City,
+        Key,
+        Units
+    }
+
 
     private String prev_wright_city;
 
+    List<WeatherCalculatorInterface> list;
 
-    public Weather(Context context , Handler handle, String city){
+    public Weather(Context context, Handler handle, WeatherCalculatorInterface weather){
         this(context, handle);
+        list.add(weather);
+    }
+
+    public Weather(Context context , Handler handle, WeatherCalculatorInterface weather, String city){
+        this(context, handle, weather);
         setCity(city);
     }
 
     public Weather(Context context , Handler handle){
-        setUnits(Units.Celsius);
-
-        api_key = API_KEY;
-        createRequest();
-
+        list = new LinkedList<WeatherCalculatorInterface>();
         this.context = context;
         this.handle = handle;
     }
 
     @Override
     public void run() {
-        if(city == "" || city == null)
-            return;
-        Bundle data = new Bundle();
-        try {
-            String tmp;
-            URL url = new URL(api_string);
-            HttpURLConnection con =  (HttpURLConnection) url.openConnection();
-            con.setRequestMethod(REQUEST_METHOD);
-            con.setRequestProperty(USER_AGENT , BROWSER_TYPE);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            StringBuffer page = new StringBuffer();
-            String inputLine;
-            while ((inputLine = reader.readLine()) != null){
-                page.append(inputLine);
+        for(WeatherCalculatorInterface wiface : list) {
+            Log.d(WEATHER_DEBUG_TAG, "IN CYCLE!");
+            WeatherModel weather = wiface.calculate();
+            if (weather == null) {
+                Log.d(WEATHER_DEBUG_TAG, " == NULL !!!");
+                continue;
             }
-            tmp = page.toString();
+            if(checkWeather(weather))
+                return;
 
-            JSONParser parser = new JSONParser();
-            JSONObject json = (JSONObject) parser.parse(tmp);
-
-
-            JSONObject jobj  = ((JSONObject)((JSONArray) json.get("weather")).get(0));
-            JSONObject main_obj = ((JSONObject) json.get("main"));
-
-            String temp = main_obj.get("temp").toString();
-            String max_tmp = main_obj.get("temp_max").toString();
-            String min_tmp = main_obj.get("temp_min").toString();
-            String pressure = main_obj.get("pressure").toString();
-
-            int maxTrim = countMaxTrim(new String[]{temp,max_tmp,min_tmp,pressure});
-            int trim = 4 < maxTrim ? 4 : maxTrim;
-
-
-            data.putString(MainActivity.CONFIG_ICON_NAME, jobj.get("icon").toString());
-            data.putString(MainActivity.CONFIG_TEMPERATURE ,temp.substring(0,trim) + " °C");
-            data.putString(MainActivity.CONFIG_PRESSURE,pressure);
-            data.putString(MainActivity.CONFIG_MAX_TEMPERATURE, max_tmp.substring(0,trim) + " °C");
-            data.putString(MainActivity.CONFIG_MIN_TEMPERATURE, min_tmp.substring(0,trim) + " °C");
-            prev_wright_city = new String(city);
-
-        }catch (SecurityException | ParseException | IOException | NullPointerException pex){
-            data.putString(WEATHER_ERROR_CODE, pex.getMessage());
-            data.putString(PREVIOUS_CITY, prev_wright_city);
-        } finally {
-            Message h_msg = handle.obtainMessage();
-            h_msg.setData(data);
-            handle.sendMessage(h_msg);
         }
     }
 
-    private int countMaxTrim(String[] strings){
-        int min_lenght = strings[0].length();
-        for (String str : strings){
-            min_lenght = min_lenght > str.length() ? str.length() : min_lenght;
+    protected boolean checkWeather(WeatherModel weather){
+        for (Class iface : weather.getClass().getInterfaces()) {
+            if(checkInterface(iface, weather))
+                return true;
         }
-        return min_lenght;
+        return false;
     }
 
-    private void createRequest(){
-        api_string = API_JSON + CITY_TEMPLATE + city  + "&" + APIKEY_TEMPLATE + api_key + "&" + UNITS_TEMPLATE + units;
+    protected boolean checkInterface(Class iface, WeatherModel weather){
+        Bundle data = new Bundle();
+        String className = iface.getSimpleName();
+        Log.d(WEATHER_DEBUG_TAG, "CHECK INTERFACES WITH NAME == " + className);
+        if (className.equals(WeatherCalculatorInterface.class.getSimpleName())) {
+            return false;
+        } else if (className.equals(WeatherSimpleModel.class.getSimpleName())) {
+            WeatherSimpleModel weatherSimpleModel = (WeatherSimpleModel) weather;
+            data.putString(MainActivity.CONFIG_ICON_NAME, weatherSimpleModel.getIconName());
+            data.putString(MainActivity.CONFIG_TEMPERATURE, weatherSimpleModel.getTemperature());
+            data.putString(MainActivity.CONFIG_PRESSURE, weatherSimpleModel.getPressure());
+            data.putString(MainActivity.CONFIG_MAX_TEMPERATURE, weatherSimpleModel.getTemperature_max());
+            data.putString(MainActivity.CONFIG_MIN_TEMPERATURE, weatherSimpleModel.getTemperature_min());
+            createMsgWithData(data);
+            return true;
+        }
+        return false;
+    }
+
+
+    private void createMsgWithData(Bundle data){
+        Message msg = handle.obtainMessage();
+        msg.setData(data);
+        handle.sendMessage(msg);
     }
 
     public void setCity(String city){
-        this.city = city;
-        createRequest();
+        //will support in future;
+        setInWeather(city, Types.City);
     }
 
     public void setUnits(Units units){
-        switch (units){
-            case Celsius:
-                this.units = "Metric";
-                break;
-
-            case Kelvin:
-                this.units = "Default";
-                break;
-
-            case Fahrenheit:
-                this.units = "Imperial";
-                break;
-        }
+        //will support in future;
+        setInWeather(units);
     }
 
     public void setApiKey(String api_k){
-        api_key = api_k;
-        createRequest();
+        //will support in future;
+        setInWeather(api_k, Types.Key);
+
+    }
+
+    private void setInWeather(String data, Types types){
+        for(WeatherCalculatorInterface weather : list){
+            for(Class iface : weather.getClass().getInterfaces()){
+                String className = iface.getSimpleName();
+                if(className.equals(WeatherInternetAccessInterface.class.getSimpleName())){
+                    WeatherInternetAccessInterface w = (WeatherInternetAccessInterface) weather;
+                    switch (types){
+                        case City:
+                            w.setCity(data);
+                            break;
+
+                        case Key:
+                            w.setApiKey(data);
+                            break;
+                    }
+                }
+            }
+        }
+    }
+
+    private void setInWeather(Units units){
+        for(WeatherCalculatorInterface weather : list) {
+            for (Class iface : weather.getClass().getInterfaces()) {
+                String className = iface.getSimpleName();
+                if (className.equals(WeatherInternetAccessInterface.class.getSimpleName())) {
+                    WeatherInternetAccessInterface w = (WeatherInternetAccessInterface) weather;
+                    w.setUnits(units);
+                }
+            }
+        }
+    }
+
+    public void addWeathersApi(WeatherCalculatorInterface weather){
+        list.add(weather);
+    }
+
+    public void deleteWeathersApi(WeatherCalculatorInterface weather){
+        list.remove(weather);
+    }
+
+    public void deleteWeathersApi(int i){
+        list.remove(i);
     }
 }
