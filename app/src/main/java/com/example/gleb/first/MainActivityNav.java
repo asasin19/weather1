@@ -27,6 +27,8 @@ import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -40,6 +42,8 @@ import com.example.gleb.first.config.Configuration;
 import com.example.gleb.first.config.preference.PreferenceActivity;
 import com.example.gleb.first.service.NotificationService;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.Timer;
@@ -86,9 +90,11 @@ public class MainActivityNav extends AppCompatActivity {
     private Weather weather;
     private ServiceConnection serviceConnection;
     private Menu menu;
+    private List<MenuItem> items;
 
     private String prev_wright_city;
     private String icon_name_weather;
+
     private InputMethodManager imputManager;
     private NotificationService service;
     private SharedPreferences sharedPreferences;
@@ -148,14 +154,14 @@ public class MainActivityNav extends AppCompatActivity {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
+        drawer.addDrawerListener(toggle);
         toggle.syncState();
 
         navigationView = (NavigationView) findViewById(R.id.nav_view);
 
         navHeaderText = (TextView)navigationView.getHeaderView(0).findViewById(R.id.nav_menu_header_textView);
+        subMenu = navigationView.getMenu().addSubMenu(Menu.NONE, Menu.NONE, 101, R.string.navigation_category_name);
         navigationView.setNavigationItemSelectedListener(listenersInitiator.getNavigationItemSelectedListener());
-        subMenu = navigationView.getMenu().addSubMenu(R.string.navigation_category_name);
         navigationView.setOnClickListener(listenersInitiator.getOnClickListener());
 
         mainTasks.getCachTask().execute();
@@ -182,6 +188,13 @@ public class MainActivityNav extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         this.menu = menu;
         getMenuInflater().inflate(R.menu.menu_items, menu);
+        items = new ArrayList<MenuItem>(menu.size());
+        items.add(menu.getItem(0));
+        items.add(menu.getItem(1));
+        items.add(menu.getItem(2));
+        items.get(0).setTitle(R.string.menu_item_settings);
+        items.get(1).setTitle(R.string.menu_item_settings_style);
+        items.get(2).setTitle(R.string.menu_item_exit);
         return true;
     }
 
@@ -261,15 +274,24 @@ public class MainActivityNav extends AppCompatActivity {
         pressureText.setText(R.string.Pressure);
         navHeaderText.setText(R.string.nav_menu_header_text);
         initMultiLanguageNavigationMenu();
+        initMultiLanguageContextMenu();
         //menu.getItem(0).setTitle(R.string.menu_item_settings);
 
     }
 
     private void initMultiLanguageNavigationMenu(){
         navigationView.getMenu().clear();
-        subMenu = navigationView.getMenu().addSubMenu(R.string.navigation_category_name);
+        subMenu = navigationView.getMenu().addSubMenu(Menu.NONE, Menu.NONE, 101, R.string.navigation_category_name);
         for(String item : citiesList.getItems())
             subMenu.add(item);
+    }
+
+    private void initMultiLanguageContextMenu(){
+        if(items == null)
+            return;
+        items.get(0).setTitle(R.string.menu_item_settings);
+        items.get(1).setTitle(R.string.menu_item_settings_style);
+        items.get(2).setTitle(R.string.menu_item_exit);
     }
 
     private void changeLocale(Locale locale){
@@ -333,7 +355,7 @@ public class MainActivityNav extends AppCompatActivity {
                     @Override
                     public void onFocusChange(View view, boolean b) {
                         if(!b) {
-                            Toast.makeText(getApplicationContext(), "focus lose", Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(getApplicationContext(), "focus lose", Toast.LENGTH_SHORT).show();
                             if (cityLine.getText().length() < 1) {
                                 return;
                             }
@@ -367,6 +389,7 @@ public class MainActivityNav extends AppCompatActivity {
                 protected void onPostExecute(Properties properties) {
                     super.onPostExecute(properties);
                     cityLine.setText(properties.getProperty(CONFIG_CITY) == null ? "Kyiv": properties.getProperty(CONFIG_CITY) );
+                    prev_wright_city = cityLine.getText().toString();
                     tempView.setText(properties.getProperty(CONFIG_TEMPERATURE));
                     minTempView.setText(properties.getProperty(CONFIG_MIN_TEMPERATURE));
                     maxTempView.setText(properties.getProperty(CONFIG_MAX_TEMPERATURE));
@@ -420,10 +443,31 @@ public class MainActivityNav extends AppCompatActivity {
                     maxTempView.setText(data.getString(CONFIG_MAX_TEMPERATURE));
                     tempView.setText(data.getString(CONFIG_TEMPERATURE));
                     pressureView.setText(data.getString(CONFIG_PRESSURE));
+                    prev_wright_city = cityLine.getText().toString();
 
                 }else {
-                    cityLine.setText(data.getString("prev_city"));
-                    Toast.makeText(getApplicationContext(), data.getString("Error"), Toast.LENGTH_LONG);
+                    Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.wrong_city_animation);
+                    animation.setRepeatCount(10);
+                    animation.setAnimationListener(new Animation.AnimationListener() {
+                        @Override
+                        public void onAnimationStart(Animation animation) {
+
+                        }
+
+                        @Override
+                        public void onAnimationEnd(Animation animation) {
+
+                            cityLine.setText(prev_wright_city);
+                            cityLine.clearFocus();
+                            Toast.makeText(getApplicationContext(), "Can't find this city!", Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onAnimationRepeat(Animation animation) {
+
+                        }
+                    });
+                    cityLine.startAnimation(animation);
                 }
                 String icon_name = data.getString(CONFIG_ICON_NAME);
                 Log.d(Cacher.CACHE_LOG_TAG, "Icon name = " + icon_name);

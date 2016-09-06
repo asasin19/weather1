@@ -155,11 +155,10 @@ public class OpenWeatherLight implements WeatherSimpleModel, WeatherInternetAcce
             temperature = temp.substring(0,trim) + " °C";
             temperature_max = max_tmp.substring(0,trim) + " °C";
             temperature_min = min_tmp.substring(0,trim) + " °C";
-            prev_wright_city = new String(city);
+            prev_wright_city = city;
 
             return this;
         }catch (SecurityException | ParseException | IOException | NullPointerException pex){
-            Log.e(WEATHER_ERROR_CODE , pex.getMessage().toString());
             for (StackTraceElement el : pex.getStackTrace())
                 Log.e(WEATHER_ERROR_CODE, el.toString());
             return null;

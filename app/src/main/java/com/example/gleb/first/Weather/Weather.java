@@ -84,6 +84,9 @@ public class Weather extends TimerTask {
                 return;
 
         }
+        Bundle data = new Bundle();
+        data.putString("Error", "Cant find any city!");
+        createMsgWithData(data);
     }
 
     protected boolean checkWeather(WeatherModel weather){
