@@ -1,9 +1,11 @@
 package com.example.gleb.first.Weather.context;
 
+import android.location.Location;
 import android.util.Log;
 
 import com.example.gleb.first.Weather.Weather;
 import com.example.gleb.first.Weather.context.helpful.StringCalc;
+import com.example.gleb.first.Weather.models.WeatherCityModel;
 import com.example.gleb.first.Weather.models.WeatherModel;
 import com.example.gleb.first.Weather.models.WeatherSimpleModel;
 
@@ -19,16 +21,16 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 /**
- * Created by Gleb on 05.09.2016.
+ * Created by gleb on 07.09.16.
  */
-public class OpenWeatherLight implements WeatherSimpleModel, WeatherInternetAccessInterface {
+public class OpenWeatherLightByCoord implements WeatherCityModel, WeatherInternetAccessInterfaceByCoord{
     public static final String API_JSON = "http://api.openweathermap.org/data/2.5/weather?";
-    private final static String CITY_TEMPLATE = "q=";
+    private final static String LOCATION_LATITUDE_TEMPLATE = "lat=";
+    private final static String LOCATION_LONGTITUDE_TEMPLATE = "lon=";
     private final static String APIKEY_TEMPLATE = "appid=";
     private final static String UNITS_TEMPLATE = "&units=";
 
     public static final String WEATHER_ERROR_CODE = "Error";
-    public static final String PREVIOUS_CITY = "prev_city";
 
     //<<Private constants!>>
     private static final String USER_AGENT = "User-Agent";
@@ -41,12 +43,11 @@ public class OpenWeatherLight implements WeatherSimpleModel, WeatherInternetAcce
     public static final Weather.Units DEFAULT_UNITS = Weather.Units.Celsius;
     //<< >>
 
-    private String city;
+    private String location;
     private String api_key;
     private String api_string;
     private String units;
 
-    private String prev_wright_city;
 
 
     private String temperature;
@@ -54,68 +55,11 @@ public class OpenWeatherLight implements WeatherSimpleModel, WeatherInternetAcce
     private String temperature_min;
     private String icon_name;
     private String pressure;
-
-
-    public OpenWeatherLight(){
-        this(DEFAULT_CITY, API_KEY, DEFAULT_UNITS);
-    }
-
-    public OpenWeatherLight(String city){
-        this(city, API_KEY, DEFAULT_UNITS);
-    }
-
-    public OpenWeatherLight(String city, Weather.Units units){
-        this(city, API_KEY, units);
-    }
-
-    public OpenWeatherLight(String city, String key, Weather.Units units){
-        setCity(city);
-        setApiKey(key);
-        setUnits(units);
-    }
-
-    public void setCity(String city){
-        this.city = city;
-        createRequest();
-    }
-
-    public void setUnits(Weather.Units units){
-        switch (units){
-            case Celsius:
-                this.units = "Metric";
-                break;
-
-            case Kelvin:
-                this.units = "Default";
-                break;
-
-            case Fahrenheit:
-                this.units = "Imperial";
-                break;
-        }
-        createRequest();
-    }
-
-    public void setApiKey(String api_k){
-        api_key = api_k;
-        createRequest();
-    }
-
-
-
-    private void createRequest(){
-        api_string = API_JSON + CITY_TEMPLATE + city  + "&" + APIKEY_TEMPLATE + api_key + "&" + UNITS_TEMPLATE + units;
-    }
-
-
-    @Override
-    public String getTemperature() {
-        return temperature;
-    }
+    private String city;
 
     @Override
     public WeatherModel calculate() {
-        if(city == "" || city == null)
+        if(location == null || location.equals(""))
             return null;
         try {
             String tmp;
@@ -136,11 +80,13 @@ public class OpenWeatherLight implements WeatherSimpleModel, WeatherInternetAcce
 
             JSONObject jobj  = ((JSONObject)((JSONArray) json.get("weather")).get(0));
             JSONObject main_obj = ((JSONObject) json.get("main"));
+            JSONObject sys_obj = ((JSONObject) json.get("sys"));
 
             String temp = main_obj.get("temp").toString();
             String max_tmp = main_obj.get("temp_max").toString();
             String min_tmp = main_obj.get("temp_min").toString();
             pressure = main_obj.get("pressure").toString();
+            city = sys_obj.get("name").toString();
 
             int maxTrim = StringCalc.countMaxTrim(new String[]{temp,max_tmp,min_tmp,pressure});
             int trim = 4 < maxTrim ? 4 : maxTrim;
@@ -150,7 +96,6 @@ public class OpenWeatherLight implements WeatherSimpleModel, WeatherInternetAcce
             temperature = temp.substring(0,trim) + " °C";
             temperature_max = max_tmp.substring(0,trim) + " °C";
             temperature_min = min_tmp.substring(0,trim) + " °C";
-            prev_wright_city = city;
 
             return this;
         }catch (SecurityException | ParseException | IOException | NullPointerException pex){
@@ -160,6 +105,22 @@ public class OpenWeatherLight implements WeatherSimpleModel, WeatherInternetAcce
         }
     }
 
+    @Override
+    public String getTemperature() {
+        return temperature;
+    }
+
+    @Override
+    public String getTemperature_min() {
+        return temperature_max;
+    }
+
+    @Override
+    public String getTemperature_max() {
+        return temperature_min;
+    }
+
+    @Override
     public String getPressure() {
         return pressure;
     }
@@ -169,15 +130,42 @@ public class OpenWeatherLight implements WeatherSimpleModel, WeatherInternetAcce
         return icon_name;
     }
 
-    public String getIcon_name() {
-        return icon_name;
+    @Override
+    public void setLocation(Location location) {
+        this.location = new StringBuilder(LOCATION_LATITUDE_TEMPLATE).append(location.getLatitude()).append("&").append(LOCATION_LONGTITUDE_TEMPLATE).append(location.getLongitude()).toString();
+        createRequest();
     }
 
-    public String getTemperature_min() {
-        return temperature_min;
+    @Override
+    public void setUnits(Weather.Units units) {
+        switch (units){
+            case Celsius:
+                this.units = "Metric";
+                break;
+
+            case Kelvin:
+                this.units = "Default";
+                break;
+
+            case Fahrenheit:
+                this.units = "Imperial";
+                break;
+        }
+        createRequest();
     }
 
-    public String getTemperature_max() {
-        return temperature_max;
+    @Override
+    public void setApiKey(String api_k) {
+        api_key = api_k;
+        createRequest();
+    }
+
+    private void createRequest(){
+        api_string = new StringBuilder(API_JSON).append(location).append("&").append(APIKEY_TEMPLATE).append(api_key).append("&").append(UNITS_TEMPLATE).append(units).toString();
+    }
+
+    @Override
+    public String getCity() {
+        return city;
     }
 }

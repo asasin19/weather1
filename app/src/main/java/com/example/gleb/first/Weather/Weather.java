@@ -2,6 +2,7 @@ package com.example.gleb.first.Weather;
 
 
 import android.content.Context;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -10,6 +11,8 @@ import android.util.Log;
 import com.example.gleb.first.MainActivity;
 import com.example.gleb.first.Weather.context.WeatherCalculatorInterface;
 import com.example.gleb.first.Weather.context.WeatherInternetAccessInterface;
+import com.example.gleb.first.Weather.context.WeatherInternetAccessInterfaceByCoord;
+import com.example.gleb.first.Weather.models.WeatherCityModel;
 import com.example.gleb.first.Weather.models.WeatherModel;
 import com.example.gleb.first.Weather.models.WeatherSimpleModel;
 
@@ -98,22 +101,33 @@ public class Weather extends TimerTask {
     }
 
     protected boolean checkInterface(Class iface, WeatherModel weather){
+        boolean ret_statm = false;
         Bundle data = new Bundle();
         String className = iface.getSimpleName();
         Log.d(WEATHER_DEBUG_TAG, "CHECK INTERFACES WITH NAME == " + className);
         if (className.equals(WeatherCalculatorInterface.class.getSimpleName())) {
-            return false;
-        } else if (className.equals(WeatherSimpleModel.class.getSimpleName())) {
+            return ret_statm;
+        }
+        if (WeatherModel.class.isInstance(weather)){
+
+        }
+        if (WeatherSimpleModel.class.isInstance(weather)) {
             WeatherSimpleModel weatherSimpleModel = (WeatherSimpleModel) weather;
             data.putString(MainActivity.CONFIG_ICON_NAME, weatherSimpleModel.getIconName());
             data.putString(MainActivity.CONFIG_TEMPERATURE, weatherSimpleModel.getTemperature());
             data.putString(MainActivity.CONFIG_PRESSURE, weatherSimpleModel.getPressure());
             data.putString(MainActivity.CONFIG_MAX_TEMPERATURE, weatherSimpleModel.getTemperature_max());
             data.putString(MainActivity.CONFIG_MIN_TEMPERATURE, weatherSimpleModel.getTemperature_min());
-            createMsgWithData(data);
-            return true;
+            ret_statm = true;
         }
-        return false;
+        if(WeatherCityModel.class.isInstance(weather)){
+            WeatherCityModel cityModel = (WeatherCityModel)weather;
+            data.putString(MainActivity.CONFIG_CITY, cityModel.getCity());
+            ret_statm = true;
+        }
+
+        createMsgWithData(data);
+        return ret_statm;
     }
 
 
@@ -139,21 +153,22 @@ public class Weather extends TimerTask {
 
     }
 
+    public void setLocation(Location location){
+        setInWeather(location);
+    }
+
     private void setInWeather(String data, Types types){
         for(WeatherCalculatorInterface weather : list){
-            for(Class iface : weather.getClass().getInterfaces()){
-                String className = iface.getSimpleName();
-                if(className.equals(WeatherInternetAccessInterface.class.getSimpleName())){
-                    WeatherInternetAccessInterface w = (WeatherInternetAccessInterface) weather;
-                    switch (types){
-                        case City:
-                            w.setCity(data);
-                            break;
+            if(WeatherInternetAccessInterface.class.isInstance(weather)){
+                WeatherInternetAccessInterface w = (WeatherInternetAccessInterface) weather;
+                switch (types){
+                    case City:
+                        w.setCity(data);
+                        break;
 
-                        case Key:
-                            w.setApiKey(data);
-                            break;
-                    }
+                    case Key:
+                        w.setApiKey(data);
+                        break;
                 }
             }
         }
@@ -161,12 +176,18 @@ public class Weather extends TimerTask {
 
     private void setInWeather(Units units){
         for(WeatherCalculatorInterface weather : list) {
-            for (Class iface : weather.getClass().getInterfaces()) {
-                String className = iface.getSimpleName();
-                if (className.equals(WeatherInternetAccessInterface.class.getSimpleName())) {
-                    WeatherInternetAccessInterface w = (WeatherInternetAccessInterface) weather;
-                    w.setUnits(units);
-                }
+            if(WeatherInternetAccessInterface.class.isInstance(weather)){
+                WeatherInternetAccessInterface w = (WeatherInternetAccessInterface) weather;
+                w.setUnits(units);
+            }
+        }
+    }
+
+    private void setInWeather(Location location){
+        for(WeatherCalculatorInterface weather : list){
+            if(WeatherInternetAccessInterfaceByCoord.class.isInstance(weather)){
+                WeatherInternetAccessInterfaceByCoord w = (WeatherInternetAccessInterfaceByCoord)weather;
+                w.setLocation(location);
             }
         }
     }
