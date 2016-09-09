@@ -14,14 +14,11 @@ import android.os.IBinder;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.view.menu.MenuItemWrapperICS;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -74,6 +71,9 @@ public class MainActivityNav extends AppCompatActivity {
     public static final int RESULT_CONFIGURATIONS_OK = 100;
     public static final int RESULT_APPLICATION_EXIT = 9999;
 
+    public static final long UPDATE_FREQ = 80000;
+    public static final long UPDATE_DELAY = 10;
+
     //Dynamic views
     private TextView minTempView;
     private TextView maxTempView;
@@ -82,7 +82,6 @@ public class MainActivityNav extends AppCompatActivity {
     private ImageView image;
     private SubMenu subMenu;
     private NavigationView navigationView;
-
     private EditText cityLine;
     //
 
@@ -93,95 +92,67 @@ public class MainActivityNav extends AppCompatActivity {
     private TextView navHeaderText;
     //
 
-    private Weather weather;
-    private ServiceConnection serviceConnection;
     private Menu menu;
-    private List<MenuItem> items;
+    private SharedPreferences sharedPreferences;
 
-    private String prev_wright_city;
-    private String icon_name_weather;
 
+    private Timer timer;
+    private Weather weather;
+
+    private ServiceConnection serviceConnection;
     private InputMethodManager imputManager;
     private NotificationService service;
-    private SharedPreferences sharedPreferences;
+
+
+    //Containers
+    private List<MenuItem> items;
     private MenuItemsList citiesList;
-    private LocationGetter locationGetter;
+    //end
+
+    //Java native types
+    private String prev_wright_city;
+    private String icon_name_weather;
 
     private boolean notifiaction_active;
     private boolean old_menu_active;
     private boolean geolocationState;
+    //end
 
-
-    public static final long UPDATE_FREQ = 80000;
-
+    //Inner classes
+    private LocationGetter locationGetter;
     private Listeners listenersInitiator;
     private MainTask mainTasks;
+    //end
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //Native
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //end
 
-        listenersInitiator = new Listeners();
-        mainTasks = new MainTask();
-        citiesList = new MenuItemsList();
+        //Init all fields, view elements and set listeners
+        initFields();
+        //end
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        imputManager = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        geolocationState = false;
+        //Init service connection and bind
         getServiceConnection();
+        //end;
 
-        //Dynamic views init
-        minTempView = (TextView) findViewById(R.id.minTempView);
-        maxTempView = (TextView) findViewById(R.id.maxTempView);
-        tempView = (TextView) findViewById(R.id.tempView);
-        pressureView = (TextView) findViewById(R.id.pressureView);
-        image = (ImageView)findViewById(R.id.weatherImage);
+        //Init Navigation Menu,drawer and toolbar
+        initNavigationMenu();
+        //end
 
-        cityLine = (EditText) findViewById(R.id.cityLineEdit);
-        //
-
-        //Static views init
-        minTempText = (TextView) findViewById(R.id.minTempText);
-        maxTempText = (TextView) findViewById(R.id.maxTempText);
-        pressureText = (TextView) findViewById(R.id.pressureText);
-
-        //
-
-        weather = new Weather(getApplicationContext() , handlerInit(), new OpenWeatherLight());
-        weather.addWeathersApi(new OpenWeatherLightByCoord());
-        cityLine.setOnKeyListener(listenersInitiator.getOnKeyListener());
-        cityLine.setOnFocusChangeListener(listenersInitiator.getOnFocusChangeListener());
-
-
-        //FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        //fab.setOnClickListener(listenersInitiator.getOnClickListener());
-
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.addDrawerListener(toggle);
-        toggle.syncState();
-
-        navigationView = (NavigationView) findViewById(R.id.nav_view);
-
-        navHeaderText = (TextView)navigationView.getHeaderView(0).findViewById(R.id.nav_menu_header_textView);
-        subMenu = navigationView.getMenu().addSubMenu(Menu.NONE, Menu.NONE, 101, R.string.navigation_category_name);
-        navigationView.setNavigationItemSelectedListener(listenersInitiator.getNavigationItemSelectedListener());
-        navigationView.setOnClickListener(listenersInitiator.getOnClickListener());
-
+        //Read config informaton from cahce in external thread
         mainTasks.getCachTask().execute();
+        //end
 
-        startService(new Intent(getApplicationContext(), NotificationService.class));
-        final Timer timer = new Timer();
-        timer.scheduleAtFixedRate(weather, 10, UPDATE_FREQ);
-        locationGetter = new LocationGetter();
+        //Start timer
+        timer.scheduleAtFixedRate(weather, UPDATE_DELAY, UPDATE_FREQ);
+        //end
 
-        bindService(new Intent(getApplicationContext(), NotificationService.class), serviceConnection, BIND_AUTO_CREATE);
     }
 
 
@@ -309,6 +280,85 @@ public class MainActivityNav extends AppCompatActivity {
         locationGetter.setStatus(false);
     }
 
+    /*
+    ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+    ++++++++++++++++++++++++++++++++++++++++PRIVATE METHODS+++++++++++++++++++++++++++++++++++++++++
+    ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+     */
+    private void initFields(){
+        initGeneralFields();
+        initViewFields();
+        setListenersInViews();
+    }
+
+    private void initGeneralFields(){
+        //Init inner classes
+        listenersInitiator = new Listeners();
+        mainTasks = new MainTask();
+        citiesList = new MenuItemsList();
+        locationGetter = new LocationGetter();
+        //end
+
+        //Init weather
+        weather = new Weather(getApplicationContext() , handlerInit(), new OpenWeatherLight());
+        weather.addWeathersApi(new OpenWeatherLightByCoord());
+        //end
+
+        //Init android service
+        imputManager = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        //
+
+        //Init java classes
+        timer = new Timer();
+        //end
+    }
+
+    private void initViewFields(){
+        //Dynamic views init
+        minTempView = (TextView) findViewById(R.id.minTempView);
+        maxTempView = (TextView) findViewById(R.id.maxTempView);
+        tempView = (TextView) findViewById(R.id.tempView);
+        pressureView = (TextView) findViewById(R.id.pressureView);
+        image = (ImageView)findViewById(R.id.weatherImage);
+
+        cityLine = (EditText) findViewById(R.id.cityLineEdit);
+        //end
+
+        //Static views init
+        minTempText = (TextView) findViewById(R.id.minTempText);
+        maxTempText = (TextView) findViewById(R.id.maxTempText);
+        pressureText = (TextView) findViewById(R.id.pressureText);
+        //end
+
+    }
+
+    private void setListenersInViews(){
+        //Set listeners
+        cityLine.setOnKeyListener(listenersInitiator.getOnKeyListener());
+        cityLine.setOnFocusChangeListener(listenersInitiator.getOnFocusChangeListener());
+        //end
+    }
+
+    private void initNavigationMenu(){
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
+
+        navHeaderText = (TextView)navigationView.getHeaderView(0).findViewById(R.id.nav_menu_header_textView);
+        subMenu = navigationView.getMenu().addSubMenu(Menu.NONE, Menu.NONE, 101, R.string.navigation_category_name);
+        navigationView.setNavigationItemSelectedListener(listenersInitiator.getNavigationItemSelectedListener());
+        navigationView.setOnClickListener(listenersInitiator.getOnClickListener());
+    }
+
+
     private void initMultiLanguage(){
         minTempText.setText(R.string.Min_tmp);
         maxTempText.setText(R.string.Max_tmp);
@@ -343,6 +393,111 @@ public class MainActivityNav extends AppCompatActivity {
 
     }
 
+    private void addToNavigationList(String item){
+        citiesList.add(item);
+        subMenu.clear();
+        for (String item1 : citiesList.getItems())
+            subMenu.add(item1);
+    }
+
+    /*
+    ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+    ++++++++++++++++++++++++++++++++++++++++++++++END+++++++++++++++++++++++++++++++++++++++++++++++
+    ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+     */
+
+    /*
+    ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+    ++++++++++++++++++++++++++++++++++++++++ABSTRACT GETTERS++++++++++++++++++++++++++++++++++++++++
+    ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+     */
+
+    private ServiceConnection getServiceConnection(){
+        if(serviceConnection == null) {
+            serviceConnection = new ServiceConnection() {
+                @Override
+                public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+                    service = ((NotificationService.MyBinder) iBinder).getService();
+                }
+
+                @Override
+                public void onServiceDisconnected(ComponentName componentName) {
+                }
+            };
+            startService(new Intent(getApplicationContext(), NotificationService.class));
+            bindService(new Intent(getApplicationContext(), NotificationService.class), serviceConnection, BIND_AUTO_CREATE);
+        }
+        return serviceConnection;
+    }
+
+    private Handler handlerInit(){
+        return new Handler(){
+            @Override
+            public void handleMessage(Message message){
+                Bundle data = message.getData();
+
+
+                if(!data.containsKey("Error")) {
+
+                    minTempView.setText(data.getString(CONFIG_MIN_TEMPERATURE));
+                    maxTempView.setText(data.getString(CONFIG_MAX_TEMPERATURE));
+                    tempView.setText(data.getString(CONFIG_TEMPERATURE));
+                    pressureView.setText(data.getString(CONFIG_PRESSURE));
+
+                    if(data.containsKey(CONFIG_CITY))
+                        cityLine.setText(data.getString(CONFIG_CITY));
+                    else
+                        prev_wright_city = cityLine.getText().toString();
+
+                }else {
+                    Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.wrong_city_animation);
+                    animation.setRepeatCount(10);
+                    animation.setAnimationListener(new Animation.AnimationListener() {
+                        @Override
+                        public void onAnimationStart(Animation animation) {
+
+                        }
+
+                        @Override
+                        public void onAnimationEnd(Animation animation) {
+
+                            cityLine.setText(prev_wright_city);
+                            cityLine.clearFocus();
+                            Toast.makeText(getApplicationContext(), "Can't find this city!", Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onAnimationRepeat(Animation animation) {
+
+                        }
+                    });
+                    cityLine.startAnimation(animation);
+                }
+                String icon_name = data.getString(CONFIG_ICON_NAME);
+                Log.d(Cacher.CACHE_LOG_TAG, "Icon name = " + icon_name);
+                icon_name_weather = icon_name;
+                new PictureRenderer(image).execute(icon_name);
+
+            }
+
+        };
+    }
+    /*
+    ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+    ++++++++++++++++++++++++++++++++++++++++++++++END+++++++++++++++++++++++++++++++++++++++++++++++
+    ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+     */
+
+    /*
+    ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+    ++++++++++++++++++++++++++++++++++++++++++INNER CLASSES+++++++++++++++++++++++++++++++++++++++++
+    ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+     */
+
+    /*
+    *LISTENERS
+    * Container for listeners.
+     */
     private class Listeners{
         private NavigationView.OnNavigationItemSelectedListener navigationItemSelectedListener;
         private View.OnClickListener onClickListener;
@@ -411,7 +566,14 @@ public class MainActivityNav extends AppCompatActivity {
         }
 
     }
+    /*
+    *END INNER CLASS
+     */
 
+    /*
+    *MAINTASK
+    * Container for asynktasks.
+     */
     private class MainTask{
 
         public AsyncTask<Void, Void, Properties> getCachTask(){
@@ -438,99 +600,30 @@ public class MainActivityNav extends AppCompatActivity {
                     icon_name_weather = properties.getProperty(CONFIG_ICON_NAME);
                     new PictureRenderer(image).execute(icon_name_weather);
                     String tmp = properties.getProperty(CONFIG_LOCALE);
-                    if(!Locale.getDefault().getLanguage().equals(tmp) && tmp != "" && tmp != null){
+                    if(!Locale.getDefault().getLanguage().equals(tmp) && !tmp.equals("") && tmp != null){
                         changeLocale(new Locale(tmp));
                         initMultiLanguage();
                     }
+
                     tmp = properties.getProperty(CONFIG_NOTIFICATION_STATE);
-                    if(tmp == null || tmp.equals(""))
-                        notifiaction_active = false;
-                    else
-                        notifiaction_active = Boolean.parseBoolean(properties.getProperty(CONFIG_NOTIFICATION_STATE));
+                    if(tmp == null || tmp.equals("") || (notifiaction_active = Boolean.parseBoolean(tmp))){}
 
                     tmp = properties.getProperty(CONFIG_BY_LOCATION_STATE);
-                    if(tmp == null || tmp.equals(""))
-                        geolocationState = false;
-                    else
-                        geolocationState = Boolean.parseBoolean(properties.getProperty(CONFIG_BY_LOCATION_STATE));
+                    if(tmp == null || tmp.equals("") || (geolocationState = Boolean.parseBoolean(tmp))){}
 
                     weather.setCity(cityLine.getText().toString());
                 }
             };
         }
     }
+    /*
+    *END INNER CLASS
+     */
 
-    private void addToNavigationList(String item){
-        citiesList.add(item);
-        subMenu.clear();
-        for (String item1 : citiesList.getItems())
-            subMenu.add(item1);
-    }
-
-    private ServiceConnection getServiceConnection(){
-        if(serviceConnection == null)
-            serviceConnection = new ServiceConnection() {
-                @Override
-                public void onServiceConnected(ComponentName componentName, IBinder iBinder) { service = ((NotificationService.MyBinder) iBinder).getService();}
-                @Override
-                public void onServiceDisconnected(ComponentName componentName) {}
-            };
-        return serviceConnection;
-    }
-
-    private Handler handlerInit(){
-        return new Handler(){
-            @Override
-            public void handleMessage(Message message){
-                Bundle data = message.getData();
-
-
-                if(!data.containsKey("Error")) {
-
-                    minTempView.setText(data.getString(CONFIG_MIN_TEMPERATURE));
-                    maxTempView.setText(data.getString(CONFIG_MAX_TEMPERATURE));
-                    tempView.setText(data.getString(CONFIG_TEMPERATURE));
-                    pressureView.setText(data.getString(CONFIG_PRESSURE));
-
-                    if(data.containsKey(CONFIG_CITY))
-                        cityLine.setText(data.getString(CONFIG_CITY));
-                    else
-                        prev_wright_city = cityLine.getText().toString();
-
-                }else {
-                    Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.wrong_city_animation);
-                    animation.setRepeatCount(10);
-                    animation.setAnimationListener(new Animation.AnimationListener() {
-                        @Override
-                        public void onAnimationStart(Animation animation) {
-
-                        }
-
-                        @Override
-                        public void onAnimationEnd(Animation animation) {
-
-                            cityLine.setText(prev_wright_city);
-                            cityLine.clearFocus();
-                            Toast.makeText(getApplicationContext(), "Can't find this city!", Toast.LENGTH_SHORT).show();
-                        }
-
-                        @Override
-                        public void onAnimationRepeat(Animation animation) {
-
-                        }
-                    });
-                    cityLine.startAnimation(animation);
-                }
-                String icon_name = data.getString(CONFIG_ICON_NAME);
-                Log.d(Cacher.CACHE_LOG_TAG, "Icon name = " + icon_name);
-                icon_name_weather = icon_name;
-                new PictureRenderer(image).execute(icon_name);
-
-            }
-
-        };
-    }
-
+    /*
+    *LOCATION GETTER
+    * Wrap geolocation.
+     */
     private class LocationGetter{
 
         public static final int LOCATION_ENABLED_NETWORK = 1;
@@ -639,6 +732,15 @@ public class MainActivityNav extends AppCompatActivity {
 
         }
     }
+    /*
+    *END INNER CLASS
+     */
+
+    /*
+    ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+    ++++++++++++++++++++++++++++++++++++++++++++++END+++++++++++++++++++++++++++++++++++++++++++++++
+    ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+     */
 
 }
 
