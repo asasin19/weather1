@@ -4,6 +4,9 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -37,12 +40,14 @@ import android.widget.Toast;
 
 import com.example.gleb.first.Weather.Weather;
 import com.example.gleb.first.Weather.context.OpenWeatherLight;
+import com.example.gleb.first.Weather.context.OpenWeatherLightByCoord;
 import com.example.gleb.first.cache.Cacher;
 import com.example.gleb.first.config.Configuration;
 import com.example.gleb.first.config.preference.PreferenceActivity;
 import com.example.gleb.first.service.NotificationService;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
@@ -61,6 +66,7 @@ public class MainActivityNav extends AppCompatActivity {
     public static final String CONFIG_ICON_NAME = "IconName";
     public static final String CONFIG_LOCALE = "Locale";
     public static final String CONFIG_NOTIFICATION_STATE = "Notification State";
+    public static final String CONFIG_BY_LOCATION_STATE = "Bylocation state";
 
     public static final String FOLDER_CONFIG = "Main";
 
@@ -99,9 +105,11 @@ public class MainActivityNav extends AppCompatActivity {
     private NotificationService service;
     private SharedPreferences sharedPreferences;
     private MenuItemsList citiesList;
+    private LocationGetter locationGetter;
 
     private boolean notifiaction_active;
     private boolean old_menu_active;
+    private boolean geolocationState;
 
 
     public static final long UPDATE_FREQ = 80000;
@@ -123,6 +131,7 @@ public class MainActivityNav extends AppCompatActivity {
 
         imputManager = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        geolocationState = false;
         getServiceConnection();
 
         //Dynamic views init
@@ -143,6 +152,7 @@ public class MainActivityNav extends AppCompatActivity {
         //
 
         weather = new Weather(getApplicationContext() , handlerInit(), new OpenWeatherLight());
+        weather.addWeathersApi(new OpenWeatherLightByCoord());
         cityLine.setOnKeyListener(listenersInitiator.getOnKeyListener());
         cityLine.setOnFocusChangeListener(listenersInitiator.getOnFocusChangeListener());
 
@@ -169,6 +179,7 @@ public class MainActivityNav extends AppCompatActivity {
         startService(new Intent(getApplicationContext(), NotificationService.class));
         final Timer timer = new Timer();
         timer.scheduleAtFixedRate(weather, 10, UPDATE_FREQ);
+        locationGetter = new LocationGetter();
 
         bindService(new Intent(getApplicationContext(), NotificationService.class), serviceConnection, BIND_AUTO_CREATE);
     }
@@ -203,10 +214,19 @@ public class MainActivityNav extends AppCompatActivity {
         switch (item.getItemId())
         {
             case R.id.Settings:
-                if(old_menu_active)
-                    startActivityForResult(new Intent(getApplicationContext(), Configuration.class), RESULT_CONFIGURATIONS_OK);
-                else
-                    startActivityForResult(new Intent(getApplicationContext(), PreferenceActivity.class), RESULT_CONFIGURATIONS_OK);
+                Bundle bundle = new Bundle();
+                bundle.putBoolean(MainActivityNav.CONFIG_BY_LOCATION_STATE, geolocationState);
+                bundle.putBoolean(MainActivityNav.CONFIG_NOTIFICATION_STATE, notifiaction_active);
+                if(old_menu_active) {
+                    Intent intent = new Intent(getApplicationContext(), Configuration.class);
+                    intent.putExtras(bundle);
+                    startActivityForResult(intent, RESULT_CONFIGURATIONS_OK);
+                }
+                else {
+                    Intent intent = new Intent(getApplicationContext(), PreferenceActivity.class);
+                    intent.putExtras(bundle);
+                    startActivityForResult(intent, RESULT_CONFIGURATIONS_OK);
+                }
                 break;
 
             case R.id.Settings_style:
@@ -236,14 +256,23 @@ public class MainActivityNav extends AppCompatActivity {
         }
 
         Bundle bundle = data.getExtras();
-        Boolean state = bundle.getBoolean(CONFIG_NOTIFICATION_STATE);
-        Log.d(CONFIG_NOTIFICATION_STATE, state.toString());
-        if(state != null) {
-            notifiaction_active = state;
-            Toast.makeText(getApplicationContext(), "U DID IT!", Toast.LENGTH_SHORT).show();
-            service.activeService(notifiaction_active);
-            Cacher.cacheConfig(FOLDER_CONFIG, CONFIG_NOTIFICATION_STATE, notifiaction_active + "");
+        notifiaction_active = bundle.getBoolean(CONFIG_NOTIFICATION_STATE);
+        if(bundle.getBoolean(CONFIG_BY_LOCATION_STATE) != geolocationState) {
+            geolocationState = bundle.getBoolean(CONFIG_BY_LOCATION_STATE);
+            if(geolocationState)
+                weather.setByFirst(Weather.WeatherTypes.ByLocation) ;
+            else
+                weather.setByFirst(Weather.WeatherTypes.ByCity);
+
+            new Thread(weather).start();
         }
+
+        Log.d(CONFIG_NOTIFICATION_STATE, String.valueOf(notifiaction_active));
+
+        locationGetter.setStatus(geolocationState);
+        Toast.makeText(getApplicationContext(), "U DID IT!", Toast.LENGTH_SHORT).show();
+        service.activeService(notifiaction_active);
+        Cacher.cacheConfig(FOLDER_CONFIG, CONFIG_NOTIFICATION_STATE, notifiaction_active + "");
 
 
         super.onActivityResult(requestCode, resultCode, data);
@@ -260,12 +289,25 @@ public class MainActivityNav extends AppCompatActivity {
         if(icon_name_weather != null)
             properties.setProperty(CONFIG_ICON_NAME, icon_name_weather);
         properties.setProperty(CONFIG_LOCALE, Locale.getDefault().getLanguage());
-        properties.setProperty(CONFIG_NOTIFICATION_STATE, notifiaction_active + "");
+        properties.setProperty(CONFIG_NOTIFICATION_STATE, String.valueOf(notifiaction_active));
+        properties.setProperty(CONFIG_BY_LOCATION_STATE, String.valueOf(geolocationState));
         super.onDestroy();
         Cacher.cacheConfig(FOLDER_CONFIG, properties);
         Cacher.saveAllConfigs();
 
         unbindService(serviceConnection);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        locationGetter.setStatus(true);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        locationGetter.setStatus(false);
     }
 
     private void initMultiLanguage(){
@@ -403,9 +445,16 @@ public class MainActivityNav extends AppCompatActivity {
                     }
                     tmp = properties.getProperty(CONFIG_NOTIFICATION_STATE);
                     if(tmp == null || tmp.equals(""))
-                        notifiaction_active = true;
+                        notifiaction_active = false;
                     else
                         notifiaction_active = Boolean.parseBoolean(properties.getProperty(CONFIG_NOTIFICATION_STATE));
+
+                    tmp = properties.getProperty(CONFIG_BY_LOCATION_STATE);
+                    if(tmp == null || tmp.equals(""))
+                        geolocationState = false;
+                    else
+                        geolocationState = Boolean.parseBoolean(properties.getProperty(CONFIG_BY_LOCATION_STATE));
+
                     weather.setCity(cityLine.getText().toString());
                 }
             };
@@ -443,7 +492,11 @@ public class MainActivityNav extends AppCompatActivity {
                     maxTempView.setText(data.getString(CONFIG_MAX_TEMPERATURE));
                     tempView.setText(data.getString(CONFIG_TEMPERATURE));
                     pressureView.setText(data.getString(CONFIG_PRESSURE));
-                    prev_wright_city = cityLine.getText().toString();
+
+                    if(data.containsKey(CONFIG_CITY))
+                        cityLine.setText(data.getString(CONFIG_CITY));
+                    else
+                        prev_wright_city = cityLine.getText().toString();
 
                 }else {
                     Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.wrong_city_animation);
@@ -477,6 +530,116 @@ public class MainActivityNav extends AppCompatActivity {
             }
 
         };
+    }
+
+    private class LocationGetter{
+
+        public static final int LOCATION_ENABLED_NETWORK = 1;
+        public static final int LOCATION_ENABLED_GPS = 2;
+        public static final int LOCATION_ENABLED_ALL = 3;
+        public static final int LOCATION_DISABLED = 4;
+
+        private boolean status;
+
+        private LocationManager locationManager;
+
+        public LocationGetter(){
+            locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        }
+
+        public void resumeLocationData(){
+            switch (checkEnabled()){
+                case LOCATION_ENABLED_ALL:
+                case LOCATION_ENABLED_GPS:
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                            1000 * 10, 10, locationListener);
+                    break;
+
+                case LOCATION_ENABLED_NETWORK:
+                    locationManager.requestLocationUpdates(
+                            LocationManager.NETWORK_PROVIDER, 1000 * 10, 10,
+                            locationListener);
+                    break;
+
+                case LOCATION_DISABLED:
+                    break;
+            }
+        }
+
+        public void pauseLocationData(){
+            locationManager.removeUpdates(locationListener);
+        }
+
+        LocationListener locationListener = new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+                Toast.makeText(getApplicationContext(), formatLocation(location), Toast.LENGTH_SHORT).show();
+                showLocation(location);
+            }
+
+            @Override
+            public void onStatusChanged(String s, int i, Bundle bundle) {
+                pauseLocationData();
+                resumeLocationData();
+            }
+
+            @Override
+            public void onProviderEnabled(String s) {
+                pauseLocationData();
+                resumeLocationData();
+            }
+
+            @Override
+            public void onProviderDisabled(String s) {
+                pauseLocationData();
+                resumeLocationData();
+            }
+        };
+
+        private void showLocation(Location location) {
+            if (location == null)
+                return;
+
+            weather.setLocation(location);
+        }
+
+        private String formatLocation(Location location) {
+            if (location == null)
+                return "";
+            return String.format(
+                    "Coordinates: lat = %1$.4f, lon = %2$.4f, time = %3$tF %3$tT",
+                    location.getLatitude(), location.getLongitude(), new Date(
+                            location.getTime()));
+        }
+
+        private int checkEnabled() {
+            if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
+                if(locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
+                    return LOCATION_ENABLED_ALL;
+                else
+                    return LOCATION_ENABLED_GPS;
+            else
+                if(locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
+                    return LOCATION_ENABLED_NETWORK;
+                else
+                    return LOCATION_DISABLED;
+
+        }
+
+        public boolean isStatus() {
+            return status;
+        }
+
+        public void setStatus(boolean status) {
+            if(this.status == status)
+                return;
+            this.status = status;
+            if(status)
+                resumeLocationData();
+            else
+                pauseLocationData();
+
+        }
     }
 
 }

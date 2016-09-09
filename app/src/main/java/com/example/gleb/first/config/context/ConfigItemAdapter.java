@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Switch;
@@ -57,17 +58,12 @@ public class ConfigItemAdapter extends BaseAdapter{
         return i;
     }
 
-    public void setOnCheckedListener(CompoundButton.OnCheckedChangeListener listener, String item){
-        switch (item){
-            case Items.ITEM_SWITCH:{
-                if(switch_item_switch == null) {
-                    switch_listener = listener;
-                    return;
-                }
-                switch_item_switch.setOnCheckedChangeListener(listener);
-                break;
-            }
-        }
+    public void setOnCheckedListener(CompoundButton.OnCheckedChangeListener listener){
+        //if(switch_item_switch == null) {
+            switch_listener = listener;
+            return;
+        //}
+        //switch_item_switch.setOnCheckedChangeListener(listener);
     }
 
     @Override
@@ -88,7 +84,7 @@ public class ConfigItemAdapter extends BaseAdapter{
                 ConfigItemCheckBox item1 = (ConfigItemCheckBox) item;
                 if (view == null)
                     view = context.inflate(R.layout.config_item_checkbox, viewGroup, false);
-
+                ((CheckBox) view.findViewById(R.id.checkBox)).setOnCheckedChangeListener(switch_listener);
                 Log.d("CONFIG", "IN CONFIG CHECK BOX ITEM. ID = " + i);
                 break;
             }

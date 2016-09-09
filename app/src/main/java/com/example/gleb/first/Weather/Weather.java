@@ -77,7 +77,7 @@ public class Weather extends TimerTask {
     @Override
     public void run() {
         for(WeatherCalculatorInterface wiface : list) {
-            Log.d(WEATHER_DEBUG_TAG, "IN CYCLE!");
+            Log.d(WEATHER_DEBUG_TAG, "IN CYCLE! " + wiface.getClass().getSimpleName());
             WeatherModel weather = wiface.calculate();
             if (weather == null) {
                 Log.d(WEATHER_DEBUG_TAG, " == NULL !!!");
@@ -192,6 +192,35 @@ public class Weather extends TimerTask {
         }
     }
 
+    public void setByFirst(WeatherTypes types){
+        List<WeatherCalculatorInterface> w1 = new ArrayList<WeatherCalculatorInterface>(list.size());
+        List<WeatherCalculatorInterface> w2 = new ArrayList<WeatherCalculatorInterface>(list.size());
+
+        switch (types){
+            case ByLocation:
+                for(WeatherCalculatorInterface cif : list)
+                    if(WeatherInternetAccessInterfaceByCoord.class.isInstance(cif))
+                        w1.add(cif);
+                    else
+                        w2.add(cif);
+
+                break;
+
+            case ByCity:
+                for(WeatherCalculatorInterface cif : list)
+                    if(WeatherInternetAccessInterfaceByCoord.class.isInstance(cif))
+                        w2.add(cif);
+                    else
+                        w1.add(cif);
+
+                break;
+        }
+        list = new LinkedList<WeatherCalculatorInterface>();
+        list.addAll(w1);
+        list.addAll(w2);
+
+    }
+
     public void addWeathersApi(WeatherCalculatorInterface weather){
         list.add(weather);
     }
@@ -203,4 +232,11 @@ public class Weather extends TimerTask {
     public void deleteWeathersApi(int i){
         list.remove(i);
     }
+
+    public enum WeatherTypes{
+        ByLocation,
+        ByCity
+    }
 }
+
+

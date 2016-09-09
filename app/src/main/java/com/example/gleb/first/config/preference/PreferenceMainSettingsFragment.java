@@ -15,6 +15,7 @@ import android.preference.SwitchPreference;
 import android.widget.Toast;
 
 import com.example.gleb.first.MainActivity;
+import com.example.gleb.first.MainActivityNav;
 import com.example.gleb.first.R;
 
 import java.util.List;
@@ -71,6 +72,7 @@ public class PreferenceMainSettingsFragment extends PreferenceFragment implement
             Intent intent = new Intent();
             Bundle bundle = new Bundle();
             bundle.putBoolean(MainActivity.CONFIG_NOTIFICATION_STATE, switchPreference.isChecked());
+            bundle.putBoolean(MainActivityNav.CONFIG_BY_LOCATION_STATE, checkBoxPreference.isChecked());
             intent.putExtras(bundle);
             getActivity().setResult(MainActivity.RESULT_APPLICATION_EXIT, intent);
             getActivity().finish();
@@ -155,5 +157,9 @@ public class PreferenceMainSettingsFragment extends PreferenceFragment implement
     @Override
     public void onDestroy() {
         super.onDestroy();
+    }
+
+    public boolean getDataState(){
+        return checkBoxPreference.isChecked();
     }
 }

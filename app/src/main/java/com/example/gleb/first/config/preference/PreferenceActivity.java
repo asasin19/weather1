@@ -10,9 +10,11 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.example.gleb.first.MainActivity;
+import com.example.gleb.first.MainActivityNav;
 import com.example.gleb.first.R;
 
 import java.util.Locale;
@@ -21,6 +23,7 @@ import java.util.Locale;
  * Created by gleb on 30.08.16.
  */
 public class PreferenceActivity extends android.preference.PreferenceActivity  {
+    public static final String DEBUG_PREFERENCE_ACTIVITY_TAG = "PREFERENCE_ACTIVITY";
 
     private SharedPreferences sharedPreferences;
     private PreferenceMainSettingsFragment preferenceMainSettingsFragment;
@@ -43,6 +46,14 @@ public class PreferenceActivity extends android.preference.PreferenceActivity  {
         Intent intent = new Intent();
         Bundle bundle = new Bundle();
         bundle.putBoolean(MainActivity.CONFIG_NOTIFICATION_STATE, preferenceMainSettingsFragment.getNotificationState());
+        bundle.putBoolean(MainActivityNav.CONFIG_BY_LOCATION_STATE, preferenceMainSettingsFragment.getDataState());
+
+        Log.d(DEBUG_PREFERENCE_ACTIVITY_TAG, new StringBuilder("NOTIFICATION STATE = ").
+                append(preferenceMainSettingsFragment.getNotificationState()).
+                append(" DATA STATE = ").
+                append(preferenceMainSettingsFragment.getDataState()).
+                toString());
+
         intent.putExtras(bundle);
         setResult(MainActivity.RESULT_CONFIGURATIONS_OK, intent);
         finish();

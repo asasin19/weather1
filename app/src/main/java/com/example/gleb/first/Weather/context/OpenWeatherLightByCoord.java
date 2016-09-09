@@ -57,6 +57,11 @@ public class OpenWeatherLightByCoord implements WeatherCityModel, WeatherInterne
     private String pressure;
     private String city;
 
+    public OpenWeatherLightByCoord(){
+        setUnits(DEFAULT_UNITS);
+        setApiKey(API_KEY);
+    }
+
     @Override
     public WeatherModel calculate() {
         if(location == null || location.equals(""))
@@ -86,7 +91,7 @@ public class OpenWeatherLightByCoord implements WeatherCityModel, WeatherInterne
             String max_tmp = main_obj.get("temp_max").toString();
             String min_tmp = main_obj.get("temp_min").toString();
             pressure = main_obj.get("pressure").toString();
-            city = sys_obj.get("name").toString();
+            city = json.get("name").toString();
 
             int maxTrim = StringCalc.countMaxTrim(new String[]{temp,max_tmp,min_tmp,pressure});
             int trim = 4 < maxTrim ? 4 : maxTrim;
@@ -101,6 +106,7 @@ public class OpenWeatherLightByCoord implements WeatherCityModel, WeatherInterne
         }catch (SecurityException | ParseException | IOException | NullPointerException pex){
             for (StackTraceElement el : pex.getStackTrace())
                 Log.e(WEATHER_ERROR_CODE, el.toString());
+            Log.e(WEATHER_ERROR_CODE, api_string);
             return null;
         }
     }

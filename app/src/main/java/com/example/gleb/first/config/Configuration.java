@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -21,6 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.gleb.first.MainActivity;
+import com.example.gleb.first.MainActivityNav;
 import com.example.gleb.first.R;
 import com.example.gleb.first.cache.Cacher;
 import com.example.gleb.first.config.context.ConfigItem;
@@ -43,6 +45,7 @@ public class Configuration extends AppCompatActivity {
     private String CONFIGURATION_EXIT = "Exit";
 
     private boolean notificationState;
+    private boolean byLocationState;
     private Bundle toReturn;
 
     @Override
@@ -50,10 +53,9 @@ public class Configuration extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_configuration);
         String tmp = Cacher.readConfig(MainActivity.FOLDER_CONFIG, MainActivity.CONFIG_NOTIFICATION_STATE);
-        if(tmp == null)
-            notificationState = true;
-        else
-            notificationState = Boolean.parseBoolean(tmp);
+        Bundle data = getIntent().getExtras();
+        notificationState = data.getBoolean(MainActivityNav.CONFIG_NOTIFICATION_STATE);
+        byLocationState = data.getBoolean(MainActivityNav.CONFIG_BY_LOCATION_STATE);
 
 
         toReturn = new Bundle();
@@ -88,16 +90,28 @@ public class Configuration extends AppCompatActivity {
         adapter.setOnCheckedListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                notificationState = b;
-                ((TextView)((View)compoundButton.getParent()).findViewById(R.id.smallConfigText)).setText(b ? getString(R.string.desription_setting_notifications_on) : getString(R.string.desription_setting_notifications_off));
-                toReturn.putBoolean(MainActivity.CONFIG_NOTIFICATION_STATE, notificationState);
+                switch (compoundButton.getId()){
+                    case R.id.config_switch:
+                        notificationState = b;
+                        ((TextView)((View)compoundButton.getParent()).findViewById(R.id.smallConfigText)).setText(b ? getString(R.string.desription_setting_notifications_on) : getString(R.string.desription_setting_notifications_off));
+                        toReturn.putBoolean(MainActivity.CONFIG_NOTIFICATION_STATE, notificationState);
+                        break;
+
+                    case R.id.checkBox:
+                        CheckBox box = (CheckBox)compoundButton;
+                        byLocationState = box.isChecked();
+                        toReturn.putBoolean(MainActivityNav.CONFIG_BY_LOCATION_STATE, byLocationState);
+                        break;
+                }
+
             }
-        }, Items.ITEM_SWITCH);
+        });
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 String item_name = adapter.getItemById(i).getLargeText();
+
 
                 if(item_name.equals(getString(R.string.configuration_notifications))){
 
