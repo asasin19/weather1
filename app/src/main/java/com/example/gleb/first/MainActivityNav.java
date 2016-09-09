@@ -270,7 +270,6 @@ public class MainActivityNav extends AppCompatActivity {
         Log.d(CONFIG_NOTIFICATION_STATE, String.valueOf(notifiaction_active));
 
         locationGetter.setStatus(geolocationState);
-        Toast.makeText(getApplicationContext(), "U DID IT!", Toast.LENGTH_SHORT).show();
         service.activeService(notifiaction_active);
         Cacher.cacheConfig(FOLDER_CONFIG, CONFIG_NOTIFICATION_STATE, notifiaction_active + "");
 
@@ -573,7 +572,6 @@ public class MainActivityNav extends AppCompatActivity {
         LocationListener locationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
-                Toast.makeText(getApplicationContext(), formatLocation(location), Toast.LENGTH_SHORT).show();
                 showLocation(location);
             }
 

@@ -282,7 +282,6 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
         Log.d(CONFIG_NOTIFICATION_STATE, state.toString());
         if(state != null) {
             notifiaction_active = state;
-            Toast.makeText(getApplicationContext(), "U DID IT!", Toast.LENGTH_SHORT).show();
             service.activeService(notifiaction_active);
             Cacher.cacheConfig(FOLDER_CONFIG, CONFIG_NOTIFICATION_STATE, notifiaction_active + "");
         }
