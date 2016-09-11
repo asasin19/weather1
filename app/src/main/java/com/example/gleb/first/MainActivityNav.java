@@ -509,7 +509,14 @@ public class MainActivityNav extends AppCompatActivity {
                 navigationItemSelectedListener = new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
                     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                        Toast.makeText(getApplicationContext(), item.getTitle(), Toast.LENGTH_SHORT).show();
+                        switch (item.getGroupId()){
+                            case 0:
+                                cityLine.setText(item.getTitle());
+                                cityLine.clearFocus();
+                                break;
+                        }
+
+
                         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
                         drawer.closeDrawer(GravityCompat.START);
                         return false;
