@@ -1,23 +1,14 @@
 package com.example.gleb.first.config.preference;
 
-import android.app.Activity;
-import android.app.Fragment;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.support.v4.app.FragmentActivity;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.example.gleb.first.MainActivity;
-import com.example.gleb.first.MainActivityNav;
+import com.example.gleb.first.main.MainActivityNav;
 import com.example.gleb.first.R;
-
-import java.util.Locale;
 
 /**
  * Created by gleb on 30.08.16.

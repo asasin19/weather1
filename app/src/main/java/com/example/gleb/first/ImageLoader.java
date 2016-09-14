@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 
 import com.example.gleb.first.cache.Cacher;
 
+import java.io.FileOutputStream;
 import java.net.URL;
 
 /**
@@ -30,4 +31,5 @@ public class ImageLoader {
         }
         return bitmap;
     }
+
 }

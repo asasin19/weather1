@@ -50,6 +50,13 @@
     <string name="navigation_drawer_open">Открыть навигационный отрисовщик</string>
     <string name="navigation_drawer_close">Закрыть навигационный отрисовщик</string>
     <string name="navigation_category_name">Последние города</string>
+    <string name="provider_gps">ГПС</string>
+    <string name="provider_network">Сеть</string>
+    <string name="navigation_menu_item_findOnMap">Найти на карте</string>
+    <string name="navigation_menu_item_share">Поделиться</string>
+    <string name="location_settings">Настройки геолокации</string>
+    <string name="share_text">Температура %1$s в %2$s!</string>
+    <string name="title_activity_maps">Карта</string>
     <!-- -->
 
 </resources>

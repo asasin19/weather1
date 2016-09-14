@@ -1,24 +1,18 @@
 package com.example.gleb.first.config.preference;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
-import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
-import android.preference.PreferenceScreen;
 import android.preference.SwitchPreference;
-import android.widget.Toast;
 
 import com.example.gleb.first.MainActivity;
-import com.example.gleb.first.MainActivityNav;
+import com.example.gleb.first.main.MainActivityNav;
 import com.example.gleb.first.R;
 
-import java.util.List;
 import java.util.Locale;
 
 /**

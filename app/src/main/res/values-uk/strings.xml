@@ -45,6 +45,13 @@
     <string name="navigation_drawer_open">Відкрити маляра навігаціі</string>
     <string name="navigation_drawer_close">Закрити маляра навігаціі</string>
     <string name="navigation_category_name">Останні міста</string>
+    <string name="provider_gps">ДПС)</string>
+    <string name="provider_network">Мережа</string>
+    <string name="navigation_menu_item_findOnMap">Знайти на мапі</string>
+    <string name="navigation_menu_item_share">Поділитися</string>
+    <string name="location_settings">Налаштунки геолок.</string>
+    <string name="share_text">Температура %1$s в %2$s!</string>
+    <string name="title_activity_maps">Мапа</string>
     <!-- -->
 
 </resources>

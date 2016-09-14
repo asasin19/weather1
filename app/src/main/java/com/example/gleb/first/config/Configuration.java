@@ -1,28 +1,17 @@
 package com.example.gleb.first.config;
 
-import android.content.Context;
 import android.content.Intent;
-import android.media.AudioManager;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.gleb.first.MainActivity;
-import com.example.gleb.first.MainActivityNav;
+import com.example.gleb.first.main.MainActivityNav;
 import com.example.gleb.first.R;
 import com.example.gleb.first.cache.Cacher;
 import com.example.gleb.first.config.context.ConfigItem;
@@ -30,7 +19,6 @@ import com.example.gleb.first.config.context.ConfigItemAdapter;
 import com.example.gleb.first.config.context.ConfigItemCheckBox;
 import com.example.gleb.first.config.context.ConfigItemIcon;
 import com.example.gleb.first.config.context.ConfigItemSwitch;
-import com.example.gleb.first.config.context.Items;
 import com.example.gleb.first.language.Language;
 
 import java.util.ArrayList;

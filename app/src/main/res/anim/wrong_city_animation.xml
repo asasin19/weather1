@@ -1,15 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <set xmlns:android="http://schemas.android.com/apk/res/android"
-    android:repeatMode="reverse"
     android:shareInterpolator="false">
 
+    <translate
+        android:duration="100"
+        android:fillAfter="true"
+        android:toXDelta="100"
+        />
+
+    <translate
+        android:startOffset="100"
+        android:duration="200"
+        android:fillAfter="true"
+        android:toXDelta="-200"
+        />
+
+    <translate
+        android:startOffset="300"
+        android:duration="100"
+        android:fillAfter="true"
+        android:toXDelta="100"
+        />
+
+    <!-->
     <rotate
         android:fromDegrees="0"
         android:toDegrees="10"
         android:pivotX="50%"
         android:pivotY="50%"
         android:duration="100"
-         />
+        />
 
     <rotate
         android:fromDegrees="0"
@@ -29,4 +49,5 @@
         android:duration="100"
         android:startOffset="200"
         />
+    <!-->
 </set>

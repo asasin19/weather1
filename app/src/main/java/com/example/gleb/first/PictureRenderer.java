@@ -21,7 +21,7 @@ public class PictureRenderer extends AsyncTask<String, Void, Bitmap> {
 
     private ImageView image;
 
-    PictureRenderer(ImageView image){
+    public PictureRenderer(ImageView image){
         this.loader = new ImageLoader();
         this.image = image;
     }

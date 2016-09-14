@@ -48,6 +48,13 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="navigation_category_name">Last cities</string>
+    <string name="provider_gps">GPS</string>
+    <string name="provider_network">Network</string>
+    <string name="navigation_menu_item_findOnMap">Find on Map</string>
+    <string name="navigation_menu_item_share">Share</string>
+    <string name="location_settings">Location settings</string>
+    <string name="share_text">Temperature is %1$s in %2$s place!</string>
+    <string name="title_activity_maps">Map</string>
     <!-- -->
 
 </resources>

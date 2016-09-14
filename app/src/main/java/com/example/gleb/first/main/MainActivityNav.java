@@ -1,6 +1,5 @@
-package com.example.gleb.first;
+package com.example.gleb.first.main;
 
-import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
@@ -10,7 +9,6 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -35,12 +33,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.gleb.first.MenuItemsList;
+import com.example.gleb.first.PictureRenderer;
+import com.example.gleb.first.R;
 import com.example.gleb.first.Weather.Weather;
 import com.example.gleb.first.Weather.context.OpenWeatherLight;
 import com.example.gleb.first.Weather.context.OpenWeatherLightByCoord;
 import com.example.gleb.first.cache.Cacher;
 import com.example.gleb.first.config.Configuration;
 import com.example.gleb.first.config.preference.PreferenceActivity;
+import com.example.gleb.first.google.map.MapsActivity;
+import com.example.gleb.first.main.connections.MyServiceConnection;
 import com.example.gleb.first.service.NotificationService;
 
 import java.util.ArrayList;
@@ -90,6 +93,7 @@ public class MainActivityNav extends AppCompatActivity {
     private TextView maxTempText;
     private TextView pressureText;
     private TextView navHeaderText;
+    private Animation animation;
     //
 
     private Menu menu;
@@ -99,9 +103,8 @@ public class MainActivityNav extends AppCompatActivity {
     private Timer timer;
     private Weather weather;
 
-    private ServiceConnection serviceConnection;
+    private MyServiceConnection serviceConnection;
     private InputMethodManager imputManager;
-    private NotificationService service;
 
 
     //Containers
@@ -141,9 +144,6 @@ public class MainActivityNav extends AppCompatActivity {
         getServiceConnection();
         //end;
 
-        //Init Navigation Menu,drawer and toolbar
-        initNavigationMenu();
-        //end
 
         //Read config informaton from cahce in external thread
         mainTasks.getCachTask().execute();
@@ -241,7 +241,7 @@ public class MainActivityNav extends AppCompatActivity {
         Log.d(CONFIG_NOTIFICATION_STATE, String.valueOf(notifiaction_active));
 
         locationGetter.setStatus(geolocationState);
-        service.activeService(notifiaction_active);
+        serviceConnection.getService().activeService(notifiaction_active);
         Cacher.cacheConfig(FOLDER_CONFIG, CONFIG_NOTIFICATION_STATE, notifiaction_active + "");
 
 
@@ -265,7 +265,7 @@ public class MainActivityNav extends AppCompatActivity {
         Cacher.cacheConfig(FOLDER_CONFIG, properties);
         Cacher.saveAllConfigs();
 
-        unbindService(serviceConnection);
+        serviceConnection.unbindService();
     }
 
     @Override
@@ -288,6 +288,11 @@ public class MainActivityNav extends AppCompatActivity {
     private void initFields(){
         initGeneralFields();
         initViewFields();
+
+        //Init Navigation Menu,drawer and toolbar
+        initNavigationMenu();
+        //end
+
         setListenersInViews();
     }
 
@@ -329,6 +334,7 @@ public class MainActivityNav extends AppCompatActivity {
         minTempText = (TextView) findViewById(R.id.minTempText);
         maxTempText = (TextView) findViewById(R.id.maxTempText);
         pressureText = (TextView) findViewById(R.id.pressureText);
+        animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.wrong_city_animation);
         //end
 
     }
@@ -337,6 +343,9 @@ public class MainActivityNav extends AppCompatActivity {
         //Set listeners
         cityLine.setOnKeyListener(listenersInitiator.getOnKeyListener());
         cityLine.setOnFocusChangeListener(listenersInitiator.getOnFocusChangeListener());
+        animation.setAnimationListener(listenersInitiator.getAnimationListener());
+        navigationView.setNavigationItemSelectedListener(listenersInitiator.getNavigationItemSelectedListener());
+        navigationView.setOnClickListener(listenersInitiator.getOnClickListener());
         //end
     }
 
@@ -353,9 +362,8 @@ public class MainActivityNav extends AppCompatActivity {
         navigationView = (NavigationView) findViewById(R.id.nav_view);
 
         navHeaderText = (TextView)navigationView.getHeaderView(0).findViewById(R.id.nav_menu_header_textView);
-        subMenu = navigationView.getMenu().addSubMenu(Menu.NONE, Menu.NONE, 101, R.string.navigation_category_name);
-        navigationView.setNavigationItemSelectedListener(listenersInitiator.getNavigationItemSelectedListener());
-        navigationView.setOnClickListener(listenersInitiator.getOnClickListener());
+        subMenu = navigationView.getMenu().addSubMenu(R.id.context_menu_menuitem_group_lc, Menu.NONE, 101, "LastCities");
+
     }
 
 
@@ -372,7 +380,7 @@ public class MainActivityNav extends AppCompatActivity {
 
     private void initMultiLanguageNavigationMenu(){
         navigationView.getMenu().clear();
-        subMenu = navigationView.getMenu().addSubMenu(Menu.NONE, Menu.NONE, 101, R.string.navigation_category_name);
+        subMenu = navigationView.getMenu().addSubMenu(R.id.context_menu_menuitem_group_lc, Menu.NONE, 101, R.string.navigation_category_name);
         for(String item : citiesList.getItems())
             subMenu.add(item);
     }
@@ -397,7 +405,7 @@ public class MainActivityNav extends AppCompatActivity {
         citiesList.add(item);
         subMenu.clear();
         for (String item1 : citiesList.getItems())
-            subMenu.add(item1);
+            subMenu.add(R.id.context_menu_menuitem_group_lc, Menu.NONE, Menu.NONE, item1);
     }
 
     /*
@@ -414,18 +422,8 @@ public class MainActivityNav extends AppCompatActivity {
 
     private ServiceConnection getServiceConnection(){
         if(serviceConnection == null) {
-            serviceConnection = new ServiceConnection() {
-                @Override
-                public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-                    service = ((NotificationService.MyBinder) iBinder).getService();
-                }
-
-                @Override
-                public void onServiceDisconnected(ComponentName componentName) {
-                }
-            };
-            startService(new Intent(getApplicationContext(), NotificationService.class));
-            bindService(new Intent(getApplicationContext(), NotificationService.class), serviceConnection, BIND_AUTO_CREATE);
+            serviceConnection = new MyServiceConnection(getApplicationContext());
+            serviceConnection.getService();
         }
         return serviceConnection;
     }
@@ -450,31 +448,9 @@ public class MainActivityNav extends AppCompatActivity {
                         prev_wright_city = cityLine.getText().toString();
 
                 }else {
-                    Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.wrong_city_animation);
-                    animation.setRepeatCount(10);
-                    animation.setAnimationListener(new Animation.AnimationListener() {
-                        @Override
-                        public void onAnimationStart(Animation animation) {
-
-                        }
-
-                        @Override
-                        public void onAnimationEnd(Animation animation) {
-
-                            cityLine.setText(prev_wright_city);
-                            cityLine.clearFocus();
-                            Toast.makeText(getApplicationContext(), "Can't find this city!", Toast.LENGTH_SHORT).show();
-                        }
-
-                        @Override
-                        public void onAnimationRepeat(Animation animation) {
-
-                        }
-                    });
                     cityLine.startAnimation(animation);
                 }
                 String icon_name = data.getString(CONFIG_ICON_NAME);
-                Log.d(Cacher.CACHE_LOG_TAG, "Icon name = " + icon_name);
                 icon_name_weather = icon_name;
                 new PictureRenderer(image).execute(icon_name);
 
@@ -503,16 +479,59 @@ public class MainActivityNav extends AppCompatActivity {
         private View.OnClickListener onClickListener;
         private View.OnKeyListener onKeyListener;
         private View.OnFocusChangeListener onFocusChangeListener;
+        private Animation.AnimationListener animationListener;
+
+        public Animation.AnimationListener getAnimationListener() {
+            if(animationListener == null)
+                animationListener = new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        cityLine.setText(prev_wright_city);
+                        cityLine.clearFocus();
+                        Toast.makeText(getApplicationContext(), "Can't find this city!", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+
+                    }
+                };
+            return animationListener;
+        }
 
         public NavigationView.OnNavigationItemSelectedListener getNavigationItemSelectedListener(){
             if(navigationItemSelectedListener == null)
                 navigationItemSelectedListener = new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
                     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                        Toast.makeText(getApplicationContext(), item.getItemId(), Toast.LENGTH_LONG).show();
                         switch (item.getGroupId()){
-                            case 0:
+                            case R.id.context_menu_menuitem_group_lc:
+                                cityLine.requestFocus();
                                 cityLine.setText(item.getTitle());
                                 cityLine.clearFocus();
+                                break;
+
+                            case R.id.context_menu_menuitem_group_helpful:
+                                switch (item.getItemId()){
+                                    case R.id.context_menu_findOnMap:
+                                        startActivity(new Intent(getApplicationContext() , MapsActivity.class));
+                                        break;
+
+                                    case R.id.context_menu_share: {
+                                        String text = String.format(getString(R.string.share_text), tempView.getText(), cityLine.getText());
+                                        startActivity(new Intent()
+                                                .setAction(Intent.ACTION_SEND)
+                                                .putExtra(Intent.EXTRA_TEXT, text)
+                                                .setType("text/plain"));
+                                    }
+                                        break;
+                                }
                                 break;
                         }
 
@@ -607,7 +626,7 @@ public class MainActivityNav extends AppCompatActivity {
                     icon_name_weather = properties.getProperty(CONFIG_ICON_NAME);
                     new PictureRenderer(image).execute(icon_name_weather);
                     String tmp = properties.getProperty(CONFIG_LOCALE);
-                    if(!Locale.getDefault().getLanguage().equals(tmp) && !tmp.equals("") && tmp != null){
+                    if(!Locale.getDefault().getLanguage().equals(tmp) && tmp != null && !tmp.equals("") ){
                         changeLocale(new Locale(tmp));
                         initMultiLanguage();
                     }
