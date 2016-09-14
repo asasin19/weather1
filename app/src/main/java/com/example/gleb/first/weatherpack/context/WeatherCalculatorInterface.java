@@ -1,6 +1,6 @@
-package com.example.gleb.first.Weather.context;
+package com.example.gleb.first.weatherpack.context;
 
-import com.example.gleb.first.Weather.models.WeatherModel;
+import com.example.gleb.first.weatherpack.models.WeatherModel;
 
 /**
  * Created by Gleb on 05.09.2016.

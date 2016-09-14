@@ -8,6 +8,7 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
+import android.util.Log;
 
 import com.example.gleb.first.MainActivity;
 import com.example.gleb.first.main.MainActivityNav;
@@ -38,6 +39,7 @@ public class PreferenceMainSettingsFragment extends PreferenceFragment implement
     private int result;
 
 
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,7 +48,7 @@ public class PreferenceMainSettingsFragment extends PreferenceFragment implement
         switchPreference = ((SwitchPreference) findPreference(PREFERENCE_NOTIFICATION));
         listPreference = ((ListPreference) findPreference(PREFERENCE_LANGUAGE));
         checkBoxPreference = ((CheckBoxPreference) findPreference(PREFERENCE_DATA));
-        preference = ((Preference) findPreference(PREFERENCE_EXIT));
+        preference = findPreference(PREFERENCE_EXIT);
 
         initMultilanguage();
 
@@ -65,10 +67,10 @@ public class PreferenceMainSettingsFragment extends PreferenceFragment implement
         if(name.equals(getString(R.string.configuration_exit))){
             Intent intent = new Intent();
             Bundle bundle = new Bundle();
-            bundle.putBoolean(MainActivity.CONFIG_NOTIFICATION_STATE, switchPreference.isChecked());
+            bundle.putBoolean(MainActivityNav.CONFIG_NOTIFICATION_STATE, switchPreference.isChecked());
             bundle.putBoolean(MainActivityNav.CONFIG_BY_LOCATION_STATE, checkBoxPreference.isChecked());
             intent.putExtras(bundle);
-            getActivity().setResult(MainActivity.RESULT_APPLICATION_EXIT, intent);
+            getActivity().setResult(MainActivityNav.RESULT_APPLICATION_EXIT, intent);
             getActivity().finish();
         }
         else if(name.equals(getString(R.string.configuration_notifications))){
@@ -155,5 +157,10 @@ public class PreferenceMainSettingsFragment extends PreferenceFragment implement
 
     public boolean getDataState(){
         return checkBoxPreference.isChecked();
+    }
+
+    public void setStates(boolean notify, boolean data){
+        switchPreference.setChecked(notify);
+        checkBoxPreference.setChecked(data);
     }
 }

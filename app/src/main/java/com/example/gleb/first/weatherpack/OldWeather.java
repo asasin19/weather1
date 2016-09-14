@@ -1,4 +1,4 @@
-package com.example.gleb.first.Weather;
+package com.example.gleb.first.weatherpack;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -6,9 +6,6 @@ import android.os.Handler;
 import android.os.Message;
 
 import com.example.gleb.first.MainActivity;
-import com.example.gleb.first.Weather.context.WeatherCalculatorInterface;
-import com.example.gleb.first.Weather.models.WeatherModel;
-import com.example.gleb.first.Weather.models.WeatherSimpleModel;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -20,8 +17,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.TimerTask;
 
 /**

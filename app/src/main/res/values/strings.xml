@@ -6,6 +6,7 @@
     <string name="off">OFF</string>
     <string name="language">English</string>
     <string name="share_text">Temperature is %1$s in %2$s place!</string>
+    <string name="location_string">Coordinates: lat = %1$.4f, lon = %2$.4f, time = %3$tF %3$tT</string>
 
     <string name="provider_gps">GPS</string>
     <string name="provider_network">Network</string>

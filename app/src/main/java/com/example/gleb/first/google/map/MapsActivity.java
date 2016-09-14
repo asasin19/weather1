@@ -1,5 +1,6 @@
 package com.example.gleb.first.google.map;
 
+import android.content.Intent;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 
@@ -8,12 +9,17 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+
+    public static final String GOOGLEMAP_LATITUDE = "Latitude";
+    public static final String GOOGLEMAP_LONGITUDE = "Longitude";
+    public static final int RESULT_RETURNED_LOCATION = 3737;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,8 +46,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+        LatLng sydney = new LatLng(30.47, 50.48);
+        mMap.addMarker(new MarkerOptions().position(sydney).title("Kyiv"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(LatLng latLng) {
+                mMap.addMarker(new MarkerOptions().position(latLng));
+                Intent intent = new Intent();
+                Bundle bundle = new Bundle();
+                bundle.putDouble(GOOGLEMAP_LATITUDE, latLng.latitude);
+                bundle.putDouble(GOOGLEMAP_LONGITUDE, latLng.longitude);
+                intent.putExtras(bundle);
+                setResult(RESULT_RETURNED_LOCATION, intent);
+                finish();
+            }
+        });
     }
 }

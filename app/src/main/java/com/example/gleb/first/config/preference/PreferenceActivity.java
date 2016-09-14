@@ -16,9 +16,7 @@ import com.example.gleb.first.R;
 public class PreferenceActivity extends android.preference.PreferenceActivity  {
     public static final String DEBUG_PREFERENCE_ACTIVITY_TAG = "PREFERENCE_ACTIVITY";
 
-    private SharedPreferences sharedPreferences;
     private PreferenceMainSettingsFragment preferenceMainSettingsFragment;
-    private int backResult;
 
 
     @Override
@@ -28,8 +26,9 @@ public class PreferenceActivity extends android.preference.PreferenceActivity  {
 
 
         preferenceMainSettingsFragment = (PreferenceMainSettingsFragment) getFragmentManager().findFragmentById(R.id.fragment);
-        //getFragmentManager().beginTransaction().replace(android.R.id.content, preferenceMainSettingsFragment).commit();
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        Bundle data = getIntent().getExtras();
+        preferenceMainSettingsFragment.setStates(data.getBoolean(MainActivityNav.CONFIG_NOTIFICATION_STATE), data.getBoolean(MainActivityNav.CONFIG_BY_LOCATION_STATE));
+        Log.d(DEBUG_PREFERENCE_ACTIVITY_TAG, "onCreatePreferenceActivity");
     }
 
     @Override
@@ -53,13 +52,6 @@ public class PreferenceActivity extends android.preference.PreferenceActivity  {
 
     @Override
     protected void onDestroy() {
-        Intent intent = new Intent();
-        Bundle bundle = new Bundle();
-        bundle.putBoolean(MainActivity.CONFIG_NOTIFICATION_STATE, preferenceMainSettingsFragment.getNotificationState());
-        intent.putExtras(bundle);
-        setResult(backResult, intent);
-        finish();
-
         super.onDestroy();
     }
 }

@@ -6,8 +6,6 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.Icon;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
@@ -20,8 +18,8 @@ import android.widget.Toast;
 import com.example.gleb.first.ImageLoader;
 import com.example.gleb.first.MainActivity;
 import com.example.gleb.first.R;
-import com.example.gleb.first.Weather.Weather;
-import com.example.gleb.first.Weather.context.OpenWeatherLight;
+import com.example.gleb.first.weatherpack.Weather;
+import com.example.gleb.first.weatherpack.context.OpenWeatherLight;
 
 import java.util.Timer;
 
@@ -32,13 +30,15 @@ public class NotificationService extends Service{
 
     public static final int NOTIFICATION_WEATHER_ID = 9999001;
     public static final String SERVICE_TAG = "SERVICEDEBUGTAG";
+    public static final String SERVICE_EXCEPTION_TAG = "WEATHER_NOTIFYSERVICE";
 
-    private long refresh_time = 120000;
+    private long refresh_time = 12000000;
 
     private NotificationManager manager;
     private Timer timer;
     private ImageLoader loader;
     private Weather weather;
+    private Handler handler;
 
 
     private MyBinder binder = new MyBinder();
@@ -67,7 +67,7 @@ public class NotificationService extends Service{
         try {
             getTimer().scheduleAtFixedRate(getWeather(), refresh_time, refresh_time);
         }catch (IllegalStateException ex){
-
+            Log.d(SERVICE_EXCEPTION_TAG, ex.getMessage());
         }
     }
 
@@ -95,51 +95,53 @@ public class NotificationService extends Service{
         Log.d(SERVICE_TAG, "onCreate");
         manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
-        Toast.makeText(this, "Service started", Toast.LENGTH_LONG);
-
         getTimer().scheduleAtFixedRate(getWeather(), refresh_time, refresh_time);
     }
 
     private Handler getHandler() {
-        return new Handler() {
-            private String last_icon = "";
+        if(handler == null)
+            handler = new Handler() {
+                private String last_icon = "";
 
-            @Override
-            public void handleMessage(Message msg) {
-                Bundle bundle = msg.getData();
-                String icon_name = bundle.getString(MainActivity.CONFIG_ICON_NAME);
+                @Override
+                public void handleMessage(Message msg) {
+                    Bundle bundle = msg.getData();
+                    String icon_name = bundle.getString(MainActivity.CONFIG_ICON_NAME);
 
-                if(last_icon.equals(icon_name))
-                    return;
-                Bitmap image = loader.getBitmap(icon_name);
+                    if(last_icon.equals(icon_name))
+                        return;
+                    Bitmap image = loader.getBitmap(icon_name);
+                    if(image == null)
+                        return;
 
-                Notification.Builder builder = new Notification.Builder(getApplicationContext());
-                builder.setContentTitle(getString(R.string.service_notification_title))
-                        .setAutoCancel(true)
-                        .setTicker(getString(R.string.service_notification_ticker))
-                        .setContentText(getString(R.string.service_notification_contentText) + " " + bundle.getString(MainActivity.CONFIG_TEMPERATURE))
-                        .setWhen(System.currentTimeMillis())
-                        .setDefaults(Notification.DEFAULT_ALL)
-                        .setSmallIcon(R.drawable.ic_notify_weather_2)
-                        .setContentIntent(PendingIntent.getActivity(getApplicationContext(), 0, new Intent(getApplicationContext(), MainActivity.class), PendingIntent.FLAG_CANCEL_CURRENT));
+                    Notification.Builder builder = new Notification.Builder(getApplicationContext());
+                    builder.setContentTitle(getString(R.string.service_notification_title))
+                            .setAutoCancel(true)
+                            .setTicker(getString(R.string.service_notification_ticker))
+                            .setContentText(getString(R.string.service_notification_contentText) + " " + bundle.getString(MainActivity.CONFIG_TEMPERATURE))
+                            .setWhen(System.currentTimeMillis())
+                            .setDefaults(Notification.DEFAULT_ALL)
+                            .setSmallIcon(R.drawable.ic_notify_weather_2)
+                            .setContentIntent(PendingIntent.getActivity(getApplicationContext(), 0, new Intent(getApplicationContext(), MainActivity.class), PendingIntent.FLAG_CANCEL_CURRENT));
 
-                image = Bitmap.createScaledBitmap(image, 300, 300 ,true);
-                builder.setLargeIcon(image);
-
-
-                Notification nf = builder.getNotification();
-                manager.notify(NOTIFICATION_WEATHER_ID, nf);
-                last_icon = icon_name;
+                    image = Bitmap.createScaledBitmap(image, 300, 300 ,true);
+                    builder.setLargeIcon(image);
 
 
-            }
-        };
+                    Notification nf = builder.getNotification();
+                    manager.notify(NOTIFICATION_WEATHER_ID, nf);
+                    last_icon = icon_name;
+
+
+                }
+            };
+        return handler;
     }
 
     private Weather getWeather(){
-        if(weather != null)
-            return weather;
-        return (weather = new Weather(getApplicationContext(),getHandler(),new OpenWeatherLight(), "Kyiv"));
+        if(weather == null)
+            weather = new Weather(getApplicationContext(),getHandler(),new OpenWeatherLight(), "Kyiv");
+        return weather;
     }
 
     @Override

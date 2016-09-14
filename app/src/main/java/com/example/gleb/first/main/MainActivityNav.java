@@ -4,12 +4,11 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Parcel;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -36,18 +35,16 @@ import android.widget.Toast;
 import com.example.gleb.first.MenuItemsList;
 import com.example.gleb.first.PictureRenderer;
 import com.example.gleb.first.R;
-import com.example.gleb.first.Weather.Weather;
-import com.example.gleb.first.Weather.context.OpenWeatherLight;
-import com.example.gleb.first.Weather.context.OpenWeatherLightByCoord;
+import com.example.gleb.first.weatherpack.Weather;
+import com.example.gleb.first.weatherpack.context.OpenWeatherLight;
+import com.example.gleb.first.weatherpack.context.OpenWeatherLightByCoord;
 import com.example.gleb.first.cache.Cacher;
 import com.example.gleb.first.config.Configuration;
 import com.example.gleb.first.config.preference.PreferenceActivity;
 import com.example.gleb.first.google.map.MapsActivity;
 import com.example.gleb.first.main.connections.MyServiceConnection;
-import com.example.gleb.first.service.NotificationService;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
@@ -69,6 +66,8 @@ public class MainActivityNav extends AppCompatActivity {
     public static final String CONFIG_BY_LOCATION_STATE = "Bylocation state";
 
     public static final String FOLDER_CONFIG = "Main";
+
+    public static final String STRING_ERROR = "Error";
 
 
     public static final int RESULT_CONFIGURATIONS_OK = 100;
@@ -122,7 +121,7 @@ public class MainActivityNav extends AppCompatActivity {
     //end
 
     //Inner classes
-    private LocationGetter locationGetter;
+    private com.example.gleb.first.location.Location location; //think about new name)))
     private Listeners listenersInitiator;
     private MainTask mainTasks;
     //end
@@ -214,38 +213,55 @@ public class MainActivityNav extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Bundle bundle = data.getExtras();
         switch (resultCode) {
-            case RESULT_CONFIGURATIONS_OK: {
-                initMultiLanguage();
-                Toast.makeText(this, "Setting closed", Toast.LENGTH_SHORT).show();
-                break;
-            }
             case RESULT_APPLICATION_EXIT: {
                 finish();
+            }
+
+            case RESULT_CONFIGURATIONS_OK: {
+                initMultiLanguage();
+                notifiaction_active = bundle.getBoolean(CONFIG_NOTIFICATION_STATE);
+                serviceConnection.getService().activeService(notifiaction_active);
+                Cacher.cacheConfig(FOLDER_CONFIG, CONFIG_NOTIFICATION_STATE, String.valueOf(notifiaction_active));
+
+                /*
+                if(bundle.getBoolean(CONFIG_BY_LOCATION_STATE) != geolocationState) {
+                    geolocationState = bundle.getBoolean(CONFIG_BY_LOCATION_STATE);
+                    if(geolocationState)
+                        weather.setByFirst(Weather.WeatherTypes.ByLocation) ;
+                    else
+                        weather.setByFirst(Weather.WeatherTypes.ByCity);
+
+                    new Thread(weather).start();
+                }
+                location.setStatus(geolocationState);
+                */
+
+                Cacher.cacheConfig(FOLDER_CONFIG, CONFIG_BY_LOCATION_STATE, String.valueOf(geolocationState));
+                break;
+            }
+
+            case MapsActivity.RESULT_RETURNED_LOCATION:{
+                weather.setByFirst(Weather.WeatherTypes.ByLocation) ;
+                Location tmp = new Location("");
+                tmp.setLatitude(bundle.getDouble(MapsActivity.GOOGLEMAP_LATITUDE));
+                tmp.setLongitude(bundle.getDouble(MapsActivity.GOOGLEMAP_LONGITUDE));
+                Toast.makeText(getApplicationContext(), tmp.toString(), Toast.LENGTH_SHORT).show();
+                weather.setLocation(tmp);
+                new Thread(weather).start();
                 break;
             }
         }
 
-        Bundle bundle = data.getExtras();
-        notifiaction_active = bundle.getBoolean(CONFIG_NOTIFICATION_STATE);
-        if(bundle.getBoolean(CONFIG_BY_LOCATION_STATE) != geolocationState) {
-            geolocationState = bundle.getBoolean(CONFIG_BY_LOCATION_STATE);
-            if(geolocationState)
-                weather.setByFirst(Weather.WeatherTypes.ByLocation) ;
-            else
-                weather.setByFirst(Weather.WeatherTypes.ByCity);
-
-            new Thread(weather).start();
-        }
-
-        Log.d(CONFIG_NOTIFICATION_STATE, String.valueOf(notifiaction_active));
-
-        locationGetter.setStatus(geolocationState);
-        serviceConnection.getService().activeService(notifiaction_active);
-        Cacher.cacheConfig(FOLDER_CONFIG, CONFIG_NOTIFICATION_STATE, notifiaction_active + "");
 
 
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
     }
 
     @Override
@@ -271,13 +287,19 @@ public class MainActivityNav extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        locationGetter.setStatus(true);
+        location.setStatus(geolocationState);
+        if(geolocationState)
+            weather.setByFirst(Weather.WeatherTypes.ByLocation) ;
+        else
+            weather.setByFirst(Weather.WeatherTypes.ByCity);
+
+        new Thread(weather).start();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        locationGetter.setStatus(false);
+        location.setStatus(false);
     }
 
     /*
@@ -301,12 +323,15 @@ public class MainActivityNav extends AppCompatActivity {
         listenersInitiator = new Listeners();
         mainTasks = new MainTask();
         citiesList = new MenuItemsList();
-        locationGetter = new LocationGetter();
         //end
 
         //Init weather
         weather = new Weather(getApplicationContext() , handlerInit(), new OpenWeatherLight());
         weather.addWeathersApi(new OpenWeatherLightByCoord());
+        //end
+
+        //init geolocation
+        location = new com.example.gleb.first.location.Location(getApplicationContext(), weather);
         //end
 
         //Init android service
@@ -379,10 +404,9 @@ public class MainActivityNav extends AppCompatActivity {
     }
 
     private void initMultiLanguageNavigationMenu(){
-        navigationView.getMenu().clear();
-        subMenu = navigationView.getMenu().addSubMenu(R.id.context_menu_menuitem_group_lc, Menu.NONE, 101, R.string.navigation_category_name);
-        for(String item : citiesList.getItems())
-            subMenu.add(item);
+        navigationView.getMenu().findItem(R.id.context_menu_findOnMap).setTitle(getString(R.string.navigation_menu_item_findOnMap));
+        navigationView.getMenu().findItem(R.id.context_menu_share).setTitle(getString(R.string.navigation_menu_item_share));
+        subMenu.setHeaderTitle(R.string.navigation_category_name);
     }
 
     private void initMultiLanguageContextMenu(){
@@ -434,8 +458,7 @@ public class MainActivityNav extends AppCompatActivity {
             public void handleMessage(Message message){
                 Bundle data = message.getData();
 
-
-                if(!data.containsKey("Error")) {
+                if(!data.containsKey(STRING_ERROR)) {
 
                     minTempView.setText(data.getString(CONFIG_MIN_TEMPERATURE));
                     maxTempView.setText(data.getString(CONFIG_MAX_TEMPERATURE));
@@ -493,7 +516,6 @@ public class MainActivityNav extends AppCompatActivity {
                     public void onAnimationEnd(Animation animation) {
                         cityLine.setText(prev_wright_city);
                         cityLine.clearFocus();
-                        Toast.makeText(getApplicationContext(), "Can't find this city!", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
@@ -512,15 +534,14 @@ public class MainActivityNav extends AppCompatActivity {
                         Toast.makeText(getApplicationContext(), item.getItemId(), Toast.LENGTH_LONG).show();
                         switch (item.getGroupId()){
                             case R.id.context_menu_menuitem_group_lc:
-                                cityLine.requestFocus();
                                 cityLine.setText(item.getTitle());
-                                cityLine.clearFocus();
+                                startWeather();
                                 break;
 
                             case R.id.context_menu_menuitem_group_helpful:
                                 switch (item.getItemId()){
                                     case R.id.context_menu_findOnMap:
-                                        startActivity(new Intent(getApplicationContext() , MapsActivity.class));
+                                        startActivityForResult(new Intent(getApplicationContext() , MapsActivity.class), MapsActivity.RESULT_RETURNED_LOCATION);
                                         break;
 
                                     case R.id.context_menu_share: {
@@ -581,14 +602,18 @@ public class MainActivityNav extends AppCompatActivity {
                             if (cityLine.getText().length() < 1) {
                                 return;
                             }
-                            weather.setCity(cityLine.getText().toString());
                             addToNavigationList(cityLine.getText().toString());
-                            new Thread(weather).start();
+                            startWeather();
                             imputManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
                         }
                     }
                 };
             return onFocusChangeListener;
+        }
+
+        private void startWeather(){
+            weather.setCity(cityLine.getText().toString());
+            new Thread(weather).start();
         }
 
     }
@@ -598,7 +623,7 @@ public class MainActivityNav extends AppCompatActivity {
 
     /*
     *MAINTASK
-    * Container for asynktasks.
+    * Container for asynctasks.
      */
     private class MainTask{
 
@@ -638,6 +663,14 @@ public class MainActivityNav extends AppCompatActivity {
                     if(tmp == null || tmp.equals("") || (geolocationState = Boolean.parseBoolean(tmp))){}
 
                     weather.setCity(cityLine.getText().toString());
+
+                    location.setStatus(geolocationState);
+                    if(geolocationState)
+                        weather.setByFirst(Weather.WeatherTypes.ByLocation) ;
+                    else
+                        weather.setByFirst(Weather.WeatherTypes.ByCity);
+
+                    new Thread(weather).start();
                 }
             };
         }
@@ -646,121 +679,6 @@ public class MainActivityNav extends AppCompatActivity {
     *END INNER CLASS
      */
 
-    /*
-    *LOCATION GETTER
-    * Wrap geolocation.
-     */
-    private class LocationGetter{
-
-        public static final int LOCATION_ENABLED_NETWORK = 1;
-        public static final int LOCATION_ENABLED_GPS = 2;
-        public static final int LOCATION_ENABLED_ALL = 3;
-        public static final int LOCATION_DISABLED = 4;
-
-        private boolean status;
-
-        private LocationManager locationManager;
-
-        public LocationGetter(){
-            locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        }
-
-        public void resumeLocationData(){
-            switch (checkEnabled()){
-                case LOCATION_ENABLED_ALL:
-                case LOCATION_ENABLED_GPS:
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                            1000 * 10, 10, locationListener);
-                    break;
-
-                case LOCATION_ENABLED_NETWORK:
-                    locationManager.requestLocationUpdates(
-                            LocationManager.NETWORK_PROVIDER, 1000 * 10, 10,
-                            locationListener);
-                    break;
-
-                case LOCATION_DISABLED:
-                    break;
-            }
-        }
-
-        public void pauseLocationData(){
-            locationManager.removeUpdates(locationListener);
-        }
-
-        LocationListener locationListener = new LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                showLocation(location);
-            }
-
-            @Override
-            public void onStatusChanged(String s, int i, Bundle bundle) {
-                pauseLocationData();
-                resumeLocationData();
-            }
-
-            @Override
-            public void onProviderEnabled(String s) {
-                pauseLocationData();
-                resumeLocationData();
-            }
-
-            @Override
-            public void onProviderDisabled(String s) {
-                pauseLocationData();
-                resumeLocationData();
-            }
-        };
-
-        private void showLocation(Location location) {
-            if (location == null)
-                return;
-
-            weather.setLocation(location);
-        }
-
-        private String formatLocation(Location location) {
-            if (location == null)
-                return "";
-            return String.format(
-                    "Coordinates: lat = %1$.4f, lon = %2$.4f, time = %3$tF %3$tT",
-                    location.getLatitude(), location.getLongitude(), new Date(
-                            location.getTime()));
-        }
-
-        private int checkEnabled() {
-            if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
-                if(locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
-                    return LOCATION_ENABLED_ALL;
-                else
-                    return LOCATION_ENABLED_GPS;
-            else
-                if(locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
-                    return LOCATION_ENABLED_NETWORK;
-                else
-                    return LOCATION_DISABLED;
-
-        }
-
-        public boolean isStatus() {
-            return status;
-        }
-
-        public void setStatus(boolean status) {
-            if(this.status == status)
-                return;
-            this.status = status;
-            if(status)
-                resumeLocationData();
-            else
-                pauseLocationData();
-
-        }
-    }
-    /*
-    *END INNER CLASS
-     */
 
     /*
     ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||

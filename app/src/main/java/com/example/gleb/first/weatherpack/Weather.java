@@ -1,4 +1,4 @@
-package com.example.gleb.first.Weather;
+package com.example.gleb.first.weatherpack;
 
 
 import android.content.Context;
@@ -9,24 +9,13 @@ import android.os.Message;
 import android.util.Log;
 
 import com.example.gleb.first.MainActivity;
-import com.example.gleb.first.Weather.context.WeatherCalculatorInterface;
-import com.example.gleb.first.Weather.context.WeatherInternetAccessInterface;
-import com.example.gleb.first.Weather.context.WeatherInternetAccessInterfaceByCoord;
-import com.example.gleb.first.Weather.models.WeatherCityModel;
-import com.example.gleb.first.Weather.models.WeatherModel;
-import com.example.gleb.first.Weather.models.WeatherSimpleModel;
+import com.example.gleb.first.weatherpack.context.WeatherCalculatorInterface;
+import com.example.gleb.first.weatherpack.context.WeatherInternetAccessInterface;
+import com.example.gleb.first.weatherpack.context.WeatherInternetAccessInterfaceByCoord;
+import com.example.gleb.first.weatherpack.models.WeatherCityModel;
+import com.example.gleb.first.weatherpack.models.WeatherModel;
+import com.example.gleb.first.weatherpack.models.WeatherSimpleModel;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.security.Key;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;

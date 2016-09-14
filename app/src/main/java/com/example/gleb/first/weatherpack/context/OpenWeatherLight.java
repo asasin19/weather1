@@ -1,11 +1,11 @@
-package com.example.gleb.first.Weather.context;
+package com.example.gleb.first.weatherpack.context;
 
 import android.util.Log;
 
-import com.example.gleb.first.Weather.Weather;
-import com.example.gleb.first.Weather.context.helpful.StringCalc;
-import com.example.gleb.first.Weather.models.WeatherModel;
-import com.example.gleb.first.Weather.models.WeatherSimpleModel;
+import com.example.gleb.first.weatherpack.Weather;
+import com.example.gleb.first.weatherpack.context.helpful.StringCalc;
+import com.example.gleb.first.weatherpack.models.WeatherModel;
+import com.example.gleb.first.weatherpack.models.WeatherSimpleModel;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;

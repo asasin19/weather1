@@ -40,10 +40,16 @@ public class Configuration extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_configuration);
-        String tmp = Cacher.readConfig(MainActivity.FOLDER_CONFIG, MainActivity.CONFIG_NOTIFICATION_STATE);
+
+        //read by config file
+        String tmp = Cacher.readConfig(MainActivityNav.FOLDER_CONFIG, MainActivityNav.CONFIG_NOTIFICATION_STATE);
+        //
+
+        //read from parent activity data
         Bundle data = getIntent().getExtras();
         notificationState = data.getBoolean(MainActivityNav.CONFIG_NOTIFICATION_STATE);
         byLocationState = data.getBoolean(MainActivityNav.CONFIG_BY_LOCATION_STATE);
+        //
 
 
         toReturn = new Bundle();
@@ -82,7 +88,7 @@ public class Configuration extends AppCompatActivity {
                     case R.id.config_switch:
                         notificationState = b;
                         ((TextView)((View)compoundButton.getParent()).findViewById(R.id.smallConfigText)).setText(b ? getString(R.string.desription_setting_notifications_on) : getString(R.string.desription_setting_notifications_off));
-                        toReturn.putBoolean(MainActivity.CONFIG_NOTIFICATION_STATE, notificationState);
+                        toReturn.putBoolean(MainActivityNav.CONFIG_NOTIFICATION_STATE, notificationState);
                         break;
 
                     case R.id.checkBox:
@@ -113,7 +119,7 @@ public class Configuration extends AppCompatActivity {
                 else if(item_name.equals(getString(R.string.configuration_exit))){
                     Intent intent = new Intent();
                     intent.putExtras(toReturn);
-                    setResult(MainActivity.RESULT_APPLICATION_EXIT, intent);
+                    setResult(MainActivityNav.RESULT_APPLICATION_EXIT, intent);
                     finish();
                 }
             }
@@ -132,7 +138,7 @@ public class Configuration extends AppCompatActivity {
     public void onBackPressed() {
         Intent intent = new Intent();
         intent.putExtras(toReturn);
-        setResult(MainActivity.RESULT_CONFIGURATIONS_OK, intent);
+        setResult(MainActivityNav.RESULT_CONFIGURATIONS_OK, intent);
         finish();
     }
 

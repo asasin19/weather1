@@ -1,8 +1,8 @@
-package com.example.gleb.first.Weather.context;
+package com.example.gleb.first.weatherpack.context;
 
 import android.location.Location;
 
-import com.example.gleb.first.Weather.Weather;
+import com.example.gleb.first.weatherpack.Weather;
 
 
 /**

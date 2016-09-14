@@ -1,4 +1,4 @@
-package com.example.gleb.first.Weather;
+package com.example.gleb.first.weatherpack;
 
 /**
  * Created by Gleb on 20.08.2016.
