@@ -35,6 +35,7 @@ import android.widget.Toast;
 import com.example.gleb.first.MenuItemsList;
 import com.example.gleb.first.PictureRenderer;
 import com.example.gleb.first.R;
+import com.example.gleb.first.location.MyLocation;
 import com.example.gleb.first.weatherpack.Weather;
 import com.example.gleb.first.weatherpack.context.OpenWeatherLight;
 import com.example.gleb.first.weatherpack.context.OpenWeatherLightByCoord;
@@ -121,7 +122,7 @@ public class MainActivityNav extends AppCompatActivity {
     //end
 
     //Inner classes
-    private com.example.gleb.first.location.Location location; //think about new name)))
+    private MyLocation location;
     private Listeners listenersInitiator;
     private MainTask mainTasks;
     //end
@@ -331,7 +332,7 @@ public class MainActivityNav extends AppCompatActivity {
         //end
 
         //init geolocation
-        location = new com.example.gleb.first.location.Location(getApplicationContext(), weather);
+        location = new MyLocation(getApplicationContext(), weather);
         //end
 
         //Init android service
