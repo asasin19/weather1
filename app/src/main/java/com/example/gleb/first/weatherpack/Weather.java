@@ -34,7 +34,7 @@ public class Weather extends TimerTask {
     private Context context;
     private Handler handle;
 
-    private LinkedList<String> order;
+
 
     public enum Units{
         Celsius,
@@ -51,7 +51,8 @@ public class Weather extends TimerTask {
 
     private String prev_wright_city;
 
-    Map<String, List<WeatherCalculatorInterface>> weatherAPIs;
+    private LinkedList<String> order;
+    private Map<String, List<WeatherCalculatorInterface>> weatherAPIs;
 
     public Weather(Context context, Handler handle, WeatherCalculatorInterface weather){
         this(context, handle);
