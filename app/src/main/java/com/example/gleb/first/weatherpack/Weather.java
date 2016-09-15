@@ -156,7 +156,7 @@ public class Weather extends TimerTask {
     }
 
     private void setInWeather(String data, Types types){
-        for(WeatherCalculatorInterface weather : weatherAPIs.get(WeatherInternetAccessInterface.class.getSimpleName())){
+        for(WeatherCalculatorInterface weather : weatherAPIs.get(WEATHER_INTERNET_BY_CITY)){
                 WeatherInternetAccessInterface w = (WeatherInternetAccessInterface) weather;
                 switch (types){
                     case City:
@@ -194,19 +194,19 @@ public class Weather extends TimerTask {
 
         switch (types){
             case ByLocation: {
-                int index = order.indexOf(WeatherInternetAccessInterfaceByCoord.class.getSimpleName());
+                int index = order.indexOf(WEATHER_INTERNET_BY_COORD);
                 if (index > 0) {
                     order.remove(index);
-                    order.addFirst(WeatherInternetAccessInterfaceByCoord.class.getSimpleName());
+                    order.addFirst(WEATHER_INTERNET_BY_COORD);
                 }
             }
                 break;
 
             case ByCity: {
-                int index = order.indexOf(WeatherInternetAccessInterface.class.getSimpleName());
+                int index = order.indexOf(WEATHER_INTERNET_BY_CITY);
                 if (index > 0) {
                     order.remove(index);
-                    order.addFirst(WeatherInternetAccessInterface.class.getSimpleName());
+                    order.addFirst(WEATHER_INTERNET_BY_CITY);
                 }
             }
 
@@ -217,23 +217,23 @@ public class Weather extends TimerTask {
 
     public void addWeathersApi(WeatherCalculatorInterface weather){
         if(WeatherInternetAccessInterfaceByCoord.class.isInstance(weather)) {
-            if (weatherAPIs.containsKey(WeatherInternetAccessInterfaceByCoord.class.getSimpleName())) {
-                weatherAPIs.get(WeatherInternetAccessInterfaceByCoord.class.getSimpleName()).add(weather);
+            if (weatherAPIs.containsKey(WEATHER_INTERNET_BY_COORD)) {
+                weatherAPIs.get(WEATHER_INTERNET_BY_COORD).add(weather);
             } else {
                 List<WeatherCalculatorInterface> list = new LinkedList<WeatherCalculatorInterface>();
                 list.add(weather);
-                weatherAPIs.put(WeatherInternetAccessInterfaceByCoord.class.getSimpleName(), list);
-                order.add(WeatherInternetAccessInterfaceByCoord.class.getSimpleName());
+                weatherAPIs.put(WEATHER_INTERNET_BY_COORD, list);
+                order.add(WEATHER_INTERNET_BY_COORD);
             }
         }
         else if(WeatherInternetAccessInterface.class.isInstance(weather)){
-            if (weatherAPIs.containsKey(WeatherInternetAccessInterface.class.getSimpleName())) {
-                weatherAPIs.get(WeatherInternetAccessInterface.class.getSimpleName()).add(weather);
+            if (weatherAPIs.containsKey(WEATHER_INTERNET_BY_CITY)) {
+                weatherAPIs.get(WEATHER_INTERNET_BY_CITY).add(weather);
             } else {
                 List<WeatherCalculatorInterface> list = new LinkedList<WeatherCalculatorInterface>();
                 list.add(weather);
-                weatherAPIs.put(WeatherInternetAccessInterface.class.getSimpleName(), list);
-                order.add(WeatherInternetAccessInterface.class.getSimpleName());
+                weatherAPIs.put(WEATHER_INTERNET_BY_CITY, list);
+                order.add(WEATHER_INTERNET_BY_CITY);
             }
         }
     }
