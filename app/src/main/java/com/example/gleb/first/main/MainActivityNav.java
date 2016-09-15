@@ -532,7 +532,6 @@ public class MainActivityNav extends AppCompatActivity {
                 navigationItemSelectedListener = new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
                     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                        Toast.makeText(getApplicationContext(), item.getItemId(), Toast.LENGTH_LONG).show();
                         switch (item.getGroupId()){
                             case R.id.context_menu_menuitem_group_lc:
                                 cityLine.setText(item.getTitle());
