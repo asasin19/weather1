@@ -214,13 +214,14 @@ public class MainActivityNav extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Bundle bundle = data.getExtras();
+
         switch (resultCode) {
             case RESULT_APPLICATION_EXIT: {
                 finish();
             }
 
             case RESULT_CONFIGURATIONS_OK: {
+                Bundle bundle = data.getExtras();
                 initMultiLanguage();
                 notifiaction_active = bundle.getBoolean(CONFIG_NOTIFICATION_STATE);
                 geolocationState = bundle.getBoolean(CONFIG_BY_LOCATION_STATE);
@@ -245,6 +246,7 @@ public class MainActivityNav extends AppCompatActivity {
             }
 
             case MapsActivity.RESULT_RETURNED_LOCATION:{
+                Bundle bundle = data.getExtras();
                 weather.setByFirst(Weather.WeatherTypes.ByLocation) ;
                 Location tmp = new Location("");
                 tmp.setLatitude(bundle.getDouble(MapsActivity.GOOGLEMAP_LATITUDE));
