@@ -487,7 +487,8 @@ public class MainActivityNav extends AppCompatActivity {
                         prev_wright_city = cityLine.getText().toString();
 
                 }else {
-                    cityLine.startAnimation(animation);
+                    //cityLine.startAnimation(animation);
+                    Toast.makeText(getApplicationContext(), "No internet connection!", Toast.LENGTH_SHORT).show();
                 }
                 String icon_name = data.getString(CONFIG_ICON_NAME);
                 icon_name_weather = icon_name;
