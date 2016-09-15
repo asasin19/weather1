@@ -434,6 +434,18 @@ public class MainActivityNav extends AppCompatActivity {
             subMenu.add(R.id.context_menu_menuitem_group_lc, Menu.NONE, Menu.NONE, item1);
     }
 
+    private void startWeather(){
+        weather.setByFirst(Weather.WeatherTypes.ByCity);
+        geolocationState = false;
+        weather.setCity(cityLine.getText().toString());
+        new Thread(weather).start();
+    }
+
+    private void startWeatherByLocation(){
+        weather.setByFirst(Weather.WeatherTypes.ByLocation);
+        geolocationState = true;
+    }
+
     /*
     ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
     ++++++++++++++++++++++++++++++++++++++++++++++END+++++++++++++++++++++++++++++++++++++++++++++++
@@ -583,8 +595,6 @@ public class MainActivityNav extends AppCompatActivity {
                     @Override
                     public boolean onKey(View view, int i, KeyEvent keyEvent) {
                         if(keyEvent.getAction() == KeyEvent.ACTION_DOWN && i == KeyEvent.KEYCODE_ENTER){
-                            weather.setByFirst(Weather.WeatherTypes.ByCity);
-                            geolocationState = false;
                             view.clearFocus();
                             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
                             return true;
@@ -612,11 +622,6 @@ public class MainActivityNav extends AppCompatActivity {
                     }
                 };
             return onFocusChangeListener;
-        }
-
-        private void startWeather(){
-            weather.setCity(cityLine.getText().toString());
-            new Thread(weather).start();
         }
 
     }
@@ -669,11 +674,9 @@ public class MainActivityNav extends AppCompatActivity {
 
                     location.setStatus(geolocationState);
                     if(geolocationState)
-                        weather.setByFirst(Weather.WeatherTypes.ByLocation) ;
+                        startWeatherByLocation();
                     else
-                        weather.setByFirst(Weather.WeatherTypes.ByCity);
-
-                    new Thread(weather).start();
+                        startWeather();
                 }
             };
         }
