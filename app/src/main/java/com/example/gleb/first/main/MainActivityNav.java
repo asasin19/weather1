@@ -223,6 +223,7 @@ public class MainActivityNav extends AppCompatActivity {
             case RESULT_CONFIGURATIONS_OK: {
                 initMultiLanguage();
                 notifiaction_active = bundle.getBoolean(CONFIG_NOTIFICATION_STATE);
+                geolocationState = bundle.getBoolean(CONFIG_BY_LOCATION_STATE);
                 serviceConnection.getService().activeService(notifiaction_active);
                 Cacher.cacheConfig(FOLDER_CONFIG, CONFIG_NOTIFICATION_STATE, String.valueOf(notifiaction_active));
 
@@ -516,7 +517,7 @@ public class MainActivityNav extends AppCompatActivity {
                     @Override
                     public void onAnimationEnd(Animation animation) {
                         cityLine.setText(prev_wright_city);
-                        cityLine.clearFocus();
+                        startWeather();
                     }
 
                     @Override
@@ -582,6 +583,8 @@ public class MainActivityNav extends AppCompatActivity {
                     @Override
                     public boolean onKey(View view, int i, KeyEvent keyEvent) {
                         if(keyEvent.getAction() == KeyEvent.ACTION_DOWN && i == KeyEvent.KEYCODE_ENTER){
+                            weather.setByFirst(Weather.WeatherTypes.ByCity);
+                            geolocationState = false;
                             view.clearFocus();
                             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
                             return true;

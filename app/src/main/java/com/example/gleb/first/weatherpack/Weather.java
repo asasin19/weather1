@@ -17,8 +17,10 @@ import com.example.gleb.first.weatherpack.models.WeatherModel;
 import com.example.gleb.first.weatherpack.models.WeatherSimpleModel;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.TimerTask;
 
 /**
@@ -26,9 +28,13 @@ import java.util.TimerTask;
  */
 public class Weather extends TimerTask {
     public static final String WEATHER_DEBUG_TAG = "WEATHERDEBUGTAG";
+    public static final String WEATHER_INTERNET_BY_COORD = WeatherInternetAccessInterfaceByCoord.class.getSimpleName();
+    public static final String WEATHER_INTERNET_BY_CITY = WeatherInternetAccessInterface.class.getSimpleName();
 
     private Context context;
     private Handler handle;
+
+    private LinkedList<String> order;
 
     public enum Units{
         Celsius,
@@ -45,11 +51,11 @@ public class Weather extends TimerTask {
 
     private String prev_wright_city;
 
-    List<WeatherCalculatorInterface> list;
+    Map<String, List<WeatherCalculatorInterface>> weatherAPIs;
 
     public Weather(Context context, Handler handle, WeatherCalculatorInterface weather){
         this(context, handle);
-        list.add(weather);
+        addWeathersApi(weather);
     }
 
     public Weather(Context context , Handler handle, WeatherCalculatorInterface weather, String city){
@@ -58,24 +64,26 @@ public class Weather extends TimerTask {
     }
 
     public Weather(Context context , Handler handle){
-        list = new LinkedList<WeatherCalculatorInterface>();
+        weatherAPIs = new HashMap<String, List<WeatherCalculatorInterface>>();
+        order = new LinkedList<String>();
         this.context = context;
         this.handle = handle;
     }
 
     @Override
     public void run() {
-        for(WeatherCalculatorInterface wiface : list) {
-            Log.d(WEATHER_DEBUG_TAG, "IN CYCLE! " + wiface.getClass().getSimpleName());
-            WeatherModel weather = wiface.calculate();
-            if (weather == null) {
-                Log.d(WEATHER_DEBUG_TAG, " == NULL !!!");
-                continue;
-            }
-            if(checkWeather(weather))
-                return;
+        for(String key : order)
+            for(WeatherCalculatorInterface wiface : weatherAPIs.get(key)) {
+                Log.d(WEATHER_DEBUG_TAG, "IN CYCLE! " + wiface.getClass().getSimpleName());
+                WeatherModel weather = wiface.calculate();
+                if (weather == null) {
+                    Log.d(WEATHER_DEBUG_TAG, " == NULL !!!");
+                    continue;
+                }
+                if(checkWeather(weather))
+                    return;
 
-        }
+            }
         Bundle data = new Bundle();
         data.putString("Error", "Cant find any city!");
         createMsgWithData(data);
@@ -147,8 +155,7 @@ public class Weather extends TimerTask {
     }
 
     private void setInWeather(String data, Types types){
-        for(WeatherCalculatorInterface weather : list){
-            if(WeatherInternetAccessInterface.class.isInstance(weather)){
+        for(WeatherCalculatorInterface weather : weatherAPIs.get(WeatherInternetAccessInterface.class.getSimpleName())){
                 WeatherInternetAccessInterface w = (WeatherInternetAccessInterface) weather;
                 switch (types){
                     case City:
@@ -159,67 +166,85 @@ public class Weather extends TimerTask {
                         w.setApiKey(data);
                         break;
                 }
-            }
         }
     }
 
     private void setInWeather(Units units){
-        for(WeatherCalculatorInterface weather : list) {
-            if(WeatherInternetAccessInterface.class.isInstance(weather)){
-                WeatherInternetAccessInterface w = (WeatherInternetAccessInterface) weather;
-                w.setUnits(units);
+        for (List<WeatherCalculatorInterface> list : weatherAPIs.values())
+            for(WeatherCalculatorInterface weather : list) {
+                if(WeatherInternetAccessInterface.class.isInstance(weather)){
+                    WeatherInternetAccessInterface w = (WeatherInternetAccessInterface) weather;
+                    w.setUnits(units);
+                }
             }
-        }
     }
 
     private void setInWeather(Location location){
-        for(WeatherCalculatorInterface weather : list){
-            if(WeatherInternetAccessInterfaceByCoord.class.isInstance(weather)){
-                WeatherInternetAccessInterfaceByCoord w = (WeatherInternetAccessInterfaceByCoord)weather;
-                w.setLocation(location);
+        for (List<WeatherCalculatorInterface> list : weatherAPIs.values())
+            for(WeatherCalculatorInterface weather : list){
+                if(WeatherInternetAccessInterfaceByCoord.class.isInstance(weather)){
+                    WeatherInternetAccessInterfaceByCoord w = (WeatherInternetAccessInterfaceByCoord)weather;
+                    w.setLocation(location);
+                }
             }
-        }
     }
 
     public void setByFirst(WeatherTypes types){
-        List<WeatherCalculatorInterface> w1 = new ArrayList<WeatherCalculatorInterface>(list.size());
-        List<WeatherCalculatorInterface> w2 = new ArrayList<WeatherCalculatorInterface>(list.size());
 
         switch (types){
-            case ByLocation:
-                for(WeatherCalculatorInterface cif : list)
-                    if(WeatherInternetAccessInterfaceByCoord.class.isInstance(cif))
-                        w1.add(cif);
-                    else
-                        w2.add(cif);
-
+            case ByLocation: {
+                int index = order.indexOf(WeatherInternetAccessInterfaceByCoord.class.getSimpleName());
+                if (index > 0) {
+                    order.remove(index);
+                    order.addFirst(WeatherInternetAccessInterfaceByCoord.class.getSimpleName());
+                }
+            }
                 break;
 
-            case ByCity:
-                for(WeatherCalculatorInterface cif : list)
-                    if(WeatherInternetAccessInterfaceByCoord.class.isInstance(cif))
-                        w2.add(cif);
-                    else
-                        w1.add(cif);
+            case ByCity: {
+                int index = order.indexOf(WeatherInternetAccessInterface.class.getSimpleName());
+                if (index > 0) {
+                    order.remove(index);
+                    order.addFirst(WeatherInternetAccessInterface.class.getSimpleName());
+                }
+            }
 
                 break;
         }
-        list = new LinkedList<WeatherCalculatorInterface>();
-        list.addAll(w1);
-        list.addAll(w2);
 
     }
 
     public void addWeathersApi(WeatherCalculatorInterface weather){
-        list.add(weather);
+        if(WeatherInternetAccessInterfaceByCoord.class.isInstance(weather)) {
+            if (weatherAPIs.containsKey(WeatherInternetAccessInterfaceByCoord.class.getSimpleName())) {
+                weatherAPIs.get(WeatherInternetAccessInterfaceByCoord.class.getSimpleName()).add(weather);
+            } else {
+                List<WeatherCalculatorInterface> list = new LinkedList<WeatherCalculatorInterface>();
+                list.add(weather);
+                weatherAPIs.put(WeatherInternetAccessInterfaceByCoord.class.getSimpleName(), list);
+                order.add(WeatherInternetAccessInterfaceByCoord.class.getSimpleName());
+            }
+        }
+        else if(WeatherInternetAccessInterface.class.isInstance(weather)){
+            if (weatherAPIs.containsKey(WeatherInternetAccessInterface.class.getSimpleName())) {
+                weatherAPIs.get(WeatherInternetAccessInterface.class.getSimpleName()).add(weather);
+            } else {
+                List<WeatherCalculatorInterface> list = new LinkedList<WeatherCalculatorInterface>();
+                list.add(weather);
+                weatherAPIs.put(WeatherInternetAccessInterface.class.getSimpleName(), list);
+                order.add(WeatherInternetAccessInterface.class.getSimpleName());
+            }
+        }
     }
 
     public void deleteWeathersApi(WeatherCalculatorInterface weather){
-        list.remove(weather);
+
+        //list.remove(weather);
     }
 
     public void deleteWeathersApi(int i){
-        list.remove(i);
+
+        //list.remove(i);
     }
 
     public enum WeatherTypes{
