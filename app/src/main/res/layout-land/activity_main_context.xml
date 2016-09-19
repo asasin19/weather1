@@ -99,7 +99,6 @@
         android:id="@+id/cityLineEdit"
         android:text="@string/saved_city"
         android:textSize="25dp"
-        android:focusableInTouchMode="true"
         android:layout_alignBottom="@+id/tempView"
         android:layout_alignParentRight="true" />
 

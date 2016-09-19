@@ -2,7 +2,7 @@
 <GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:clickable="true">
+    >
 
     <include layout="@layout/config_items_layout"
         android:layout_height="wrap_content"
@@ -17,6 +17,7 @@
         android:layout_row="0"
         android:layout_column="2"
         android:layout_marginTop="10dp"
-        android:layout_marginRight="20dp"/>
+        android:layout_marginRight="20dp"
+        android:focusable="false"/>
 
 </GridLayout>

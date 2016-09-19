@@ -13,10 +13,12 @@
 
     <group android:id="@+id/context_menu_menuitem_group_helpful">
         <item android:title="@string/navigation_menu_item_findOnMap"
-                android:id="@+id/context_menu_findOnMap" />
+            android:id="@+id/context_menu_findOnMap"
+            android:icon="@drawable/globe"/>
 
         <item android:title="@string/navigation_menu_item_share"
-            android:id="@+id/context_menu_share" />
+            android:id="@+id/context_menu_share"
+            android:icon="@drawable/share"/>
 
     </group>
 
