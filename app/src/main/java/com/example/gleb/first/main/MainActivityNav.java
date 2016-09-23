@@ -74,6 +74,9 @@ public class MainActivityNav extends AppCompatActivity {
 
     public static final int RESULT_CONFIGURATIONS_OK = 100;
     public static final int RESULT_APPLICATION_EXIT = 9999;
+    public static final int RESULT_PLACE_CHOISE_OK = 101;
+
+    public static final int REQEST_CODE_PLACE = 10;
 
     public static final long UPDATE_FREQ = 80000;
     public static final long UPDATE_DELAY = 10;
@@ -203,7 +206,7 @@ public class MainActivityNav extends AppCompatActivity {
                 break;
 
             case R.id.settings_item_weather_list:
-                startActivity(new Intent(getApplicationContext(), PlaceActivity.class));
+                startActivityForResult(new Intent(getApplicationContext(), PlaceActivity.class), REQEST_CODE_PLACE);
                 break;
         }
 
@@ -254,6 +257,11 @@ public class MainActivityNav extends AppCompatActivity {
                 new Thread(weather).start();
                 break;
             }
+
+            case RESULT_PLACE_CHOISE_OK:
+                cityLine.setText(data.getExtras().getString(CONFIG_CITY));
+                startWeather();
+                break;
         }
 
 

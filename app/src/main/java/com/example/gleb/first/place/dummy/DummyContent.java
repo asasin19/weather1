@@ -45,7 +45,7 @@ public class DummyContent {
         return builder.toString();
     }
 
-    public static class DummyItem implements Parcelable {
+    public static class DummyItem{
         public final String id;
         public final ItemContent content;
         public final String details;
@@ -61,6 +61,7 @@ public class DummyContent {
             return content.city.toString();
         }
 
+        /*
         @Override
         public int describeContents() {
             return 0;
@@ -72,23 +73,25 @@ public class DummyContent {
         }
 
         public static final Parcelable.Creator<DummyItem> CREATOR = new Parcelable.Creator<DummyItem>(){
-
+            @Override
             public DummyItem createFromParcel(Parcel parcel){
                 return new DummyItem(parcel);
             }
 
+            @Override
             public DummyItem[] newArray(int size){
                 return new DummyItem[size];
             }
         };
 
-        private DummyItem(Parcel parcel){
+        public DummyItem(Parcel parcel){
             String[] s_arr = new String[9];
             parcel.readStringArray(s_arr);
             id = s_arr[0];
             content = new ItemContent(s_arr[1], s_arr[2], s_arr[3], s_arr[4], s_arr[5], s_arr[6], s_arr[7]);
             details = s_arr[8];
         }
+        */
     }
 
     public static class ItemContent{

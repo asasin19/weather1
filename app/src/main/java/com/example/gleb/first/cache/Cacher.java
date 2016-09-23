@@ -23,7 +23,7 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.stream.Stream;
+
 
 /**
  * Created by Gleb on 25.08.2016.
@@ -40,7 +40,7 @@ public class Cacher {
 
 
     private static Map<String, Properties> config_cache;
-    private static Map<String , List<String>> list_cache;
+    private static Map<String , Set<String>> list_cache;
 
     public static boolean cacheImage(Bitmap bitmap, String name){
         if(!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
@@ -142,9 +142,9 @@ public class Cacher {
         return false;
     }
 
-    public synchronized static boolean cacheList(String name, List<String> list , boolean addToFile){
+    public synchronized static boolean cacheList(String name, Set<String> list , boolean addToFile){
         if(list_cache == null)
-            list_cache = new HashMap<String, List<String>>();
+            list_cache = new HashMap<String, Set<String>>();
         list_cache.put(name, list);
         if (!addToFile)
             return true;
@@ -231,7 +231,7 @@ public class Cacher {
         for(String name : list_cache.keySet()){
             try{
                 File file = new File(Environment.getExternalStorageDirectory() + SAVED_LIST_PATH + "/" + name + SAVED_LIST_TYPE);
-                List<String> list = readList(name);
+                Set<String> list = readList(name);
                 if(list == null)
                     continue;
 
@@ -292,16 +292,16 @@ public class Cacher {
 
     }
 
-    public static List<String> readList(String name){
+    public static Set<String> readList(String name){
         if(list_cache == null)
-            list_cache = new HashMap<String, List<String>>();
+            list_cache = new HashMap<String, Set<String>>();
         else if(list_cache.get(name) != null)
             return list_cache.get(name);
         if(!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
             Log.d(CACHE_LOG_TAG, "can't found SD card.");
             return null;
         }
-        List<String> list = new LinkedList<>();
+        Set<String> list = new LinkedHashSet<>();
         File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + SAVED_LIST_PATH + "/" + name + SAVED_LIST_TYPE);
         BufferedReader reader = null;
         try {
@@ -317,7 +317,7 @@ public class Cacher {
         }
 
         list_cache.put(name, list);
-        return new LinkedList<>(list);
+        return new LinkedHashSet<>(list);
 
     }
 

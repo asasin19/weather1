@@ -22,15 +22,20 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.example.gleb.first.R;
+import com.example.gleb.first.main.MainActivityNav;
 import com.example.gleb.first.place.dummy.DummyContent;
 import com.example.gleb.first.weatherpack.Weather;
 import com.example.gleb.first.weatherpack.context.OpenWeatherLight;
 
 
 public class PlaceActivity extends FragmentActivity implements PlaceList.OnListFragmentInteractionListener {
+    public static final int DIALOG_BUTTON_OK = -1;
+    public static final int DIALOG_BUTTON_CANCEL = -2;
 
     private Fragment fragment;
     private AlertDialog dialog;
+    private SavedPlace savedPlace;
+    private EditText input;
 
 
     @Override
@@ -41,11 +46,15 @@ public class PlaceActivity extends FragmentActivity implements PlaceList.OnListF
         fragment = new PlaceList();
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.add(linearLayout.getId(), fragment).commit();
+        savedPlace = SavedPlace.init();
     }
 
     @Override
     public void onListFragmentInteraction(DummyContent.DummyItem item) {
-        Toast.makeText(getApplicationContext(), item.content.city, Toast.LENGTH_SHORT).show();
+        Bundle bundle = new Bundle();
+        bundle.putString(MainActivityNav.CONFIG_CITY, item.content.city);
+        setResult(MainActivityNav.RESULT_PLACE_CHOISE_OK, new Intent().putExtras(bundle));
+        finish();
     }
 
     @Override
@@ -73,7 +82,7 @@ public class PlaceActivity extends FragmentActivity implements PlaceList.OnListF
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-        final EditText input = new EditText(getApplicationContext());
+        input = new EditText(getApplicationContext());
         input.setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT));
@@ -81,6 +90,7 @@ public class PlaceActivity extends FragmentActivity implements PlaceList.OnListF
         input.setOnKeyListener(onKeyListener);
         input.setSingleLine(true);
         input.setInputType(InputType.TYPE_TEXT_VARIATION_PERSON_NAME);
+        input.setHint("City");
 
         builder.setMessage("Please, write city")
                 .setView(input)
@@ -93,11 +103,17 @@ public class PlaceActivity extends FragmentActivity implements PlaceList.OnListF
     private View.OnKeyListener onKeyListener = new View.OnKeyListener() {
         @Override
         public boolean onKey(View view, int i, KeyEvent keyEvent) {
-            EditText input = (EditText)view;
             if(keyEvent.getAction() == KeyEvent.ACTION_DOWN && i == KeyEvent.KEYCODE_ENTER){
                 if(input.getText().length() < 2)
                     return false;
-                SavedPlace.init().addPlace(input.getText().toString());
+                final String text = input.getText().toString();
+                input.setText("");
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        savedPlace.addPlace(text);
+                    }
+                }).start();
                 dialog.hide();
             }
             return false;
@@ -107,6 +123,22 @@ public class PlaceActivity extends FragmentActivity implements PlaceList.OnListF
     private DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
         @Override
         public void onClick(DialogInterface dialogInterface, int i) {
+            switch (i){
+                case DIALOG_BUTTON_OK:
+                    if(input.getText().length() < 2) {
+                        Toast.makeText(getApplicationContext(), "Please, write city correct!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    final String text = input.getText().toString();
+                    input.setText("");
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            savedPlace.addPlace(text);
+                        }
+                    }).start();
+                    break;
+            }
         }
     };
 }

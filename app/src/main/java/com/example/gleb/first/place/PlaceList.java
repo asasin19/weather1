@@ -31,6 +31,7 @@ public class PlaceList extends Fragment {
     private OnListFragmentInteractionListener mListener;
     private MyPlaceRecyclerViewAdapter adapter;
     private SavedPlace savedPlace;
+    private RecyclerView recyclerView;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -66,12 +67,15 @@ public class PlaceList extends Fragment {
             @Override
             public void handleMessage(Message msg) {
                 Bundle data = msg.getData();
-                Parcelable[] parcelables =  data.getParcelableArray("Items");
-                if(parcelables == null)
+                int operation_id = data.getInt(SavedPlace.OPERATION_ID);
+                List<DummyItem> items = savedPlace.getContentItem(operation_id);
+                if(items == null)
                     return;
-                for(Parcelable parcelable : parcelables){
-                    adapter.addItem((DummyItem) parcelable);
-                }
+                if(recyclerView == null)
+                    adapter = new MyPlaceRecyclerViewAdapter(items, mListener);
+                else
+                    recyclerView.setAdapter(new MyPlaceRecyclerViewAdapter(items, mListener));
+
                 super.handleMessage(msg);
             }
         });
@@ -79,13 +83,14 @@ public class PlaceList extends Fragment {
         // Set the adapter
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
+            recyclerView = (RecyclerView) view;
             if (mColumnCount <= 1) {
                 recyclerView.setLayoutManager(new LinearLayoutManager(context));
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            MyPlaceRecyclerViewAdapter adapter = new MyPlaceRecyclerViewAdapter(DummyContent.ITEMS, mListener);
+            if(adapter == null)
+                adapter = new MyPlaceRecyclerViewAdapter(DummyContent.ITEMS, mListener);
             recyclerView.setAdapter(adapter);
         }
 
