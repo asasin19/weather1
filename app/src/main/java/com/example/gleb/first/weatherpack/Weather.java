@@ -9,6 +9,7 @@ import android.os.Message;
 import android.util.Log;
 
 import com.example.gleb.first.MainActivity;
+import com.example.gleb.first.weatherpack.context.OpenWeatherLight;
 import com.example.gleb.first.weatherpack.context.WeatherCalculatorInterface;
 import com.example.gleb.first.weatherpack.context.WeatherInternetAccessInterface;
 import com.example.gleb.first.weatherpack.context.WeatherInternetAccessInterfaceByCoord;

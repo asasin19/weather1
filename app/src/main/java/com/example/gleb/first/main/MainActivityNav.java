@@ -36,6 +36,7 @@ import com.example.gleb.first.MenuItemsList;
 import com.example.gleb.first.PictureRenderer;
 import com.example.gleb.first.R;
 import com.example.gleb.first.location.MyLocation;
+import com.example.gleb.first.place.PlaceActivity;
 import com.example.gleb.first.weatherpack.Weather;
 import com.example.gleb.first.weatherpack.context.OpenWeatherLight;
 import com.example.gleb.first.weatherpack.context.OpenWeatherLightByCoord;
@@ -170,13 +171,6 @@ public class MainActivityNav extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         this.menu = menu;
         getMenuInflater().inflate(R.menu.menu_items, menu);
-        items = new ArrayList<MenuItem>(menu.size());
-        items.add(menu.getItem(0));
-        items.add(menu.getItem(1));
-        items.add(menu.getItem(2));
-        items.get(0).setTitle(R.string.menu_item_settings);
-        items.get(1).setTitle(R.string.menu_item_settings_style);
-        items.get(2).setTitle(R.string.menu_item_exit);
         return true;
     }
 
@@ -184,7 +178,7 @@ public class MainActivityNav extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId())
         {
-            case R.id.Settings:
+            case R.id.settings_item_settings:
                 Bundle bundle = new Bundle();
                 bundle.putBoolean(MainActivityNav.CONFIG_BY_LOCATION_STATE, geolocationState);
                 bundle.putBoolean(MainActivityNav.CONFIG_NOTIFICATION_STATE, notifiaction_active);
@@ -200,12 +194,16 @@ public class MainActivityNav extends AppCompatActivity {
                 }
                 break;
 
-            case R.id.Settings_style:
+            case R.id.settings_item_settings_style:
                 item.setChecked(!item.isChecked());
                 old_menu_active = item.isChecked();
                 break;
-            case R.id.Exit:
+            case R.id.settings_item_exit:
                 finish();
+                break;
+
+            case R.id.settings_item_weather_list:
+                startActivity(new Intent(getApplicationContext(), PlaceActivity.class));
                 break;
         }
 
@@ -403,8 +401,6 @@ public class MainActivityNav extends AppCompatActivity {
         navHeaderText.setText(R.string.nav_menu_header_text);
         initMultiLanguageNavigationMenu();
         initMultiLanguageContextMenu();
-        //menu.getItem(0).setTitle(R.string.menu_item_settings);
-
     }
 
     private void initMultiLanguageNavigationMenu(){
@@ -414,11 +410,9 @@ public class MainActivityNav extends AppCompatActivity {
     }
 
     private void initMultiLanguageContextMenu(){
-        if(items == null)
-            return;
-        items.get(0).setTitle(R.string.menu_item_settings);
-        items.get(1).setTitle(R.string.menu_item_settings_style);
-        items.get(2).setTitle(R.string.menu_item_exit);
+        menu.findItem(R.id.settings_item_exit).setTitle(R.string.menu_item_exit);
+        menu.findItem(R.id.settings_item_settings).setTitle(R.string.menu_item_settings);
+        menu.findItem(R.id.settings_item_settings_style).setTitle(R.string.menu_item_settings_style);
     }
 
     private void changeLocale(Locale locale){

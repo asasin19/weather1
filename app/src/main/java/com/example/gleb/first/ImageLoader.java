@@ -16,6 +16,10 @@ public class ImageLoader {
     public static final String IMAGE_SOURCE_TYPE = ".png";
 
     public Bitmap getBitmap(String imageName){
+        return createBitmap(imageName);
+    }
+
+    public static Bitmap createBitmap(String imageName){
         Bitmap bitmap = Cacher.readImage(imageName);
         if(bitmap == null){
             String s_url =  IMAGE_SOURCE_URI + imageName + IMAGE_SOURCE_TYPE;

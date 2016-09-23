@@ -28,6 +28,12 @@
         </activity>
 
         <activity
+            android:name=".place.PlaceActivity"
+            android:label=""
+            android:theme="@android:style/Theme.DeviceDefault.Light"/>
+
+
+        <activity
             android:name=".config.Configuration"
             android:label="@string/title_activity_configuration" />
 

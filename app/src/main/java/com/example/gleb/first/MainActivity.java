@@ -240,7 +240,7 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId())
         {
-            case R.id.Settings:
+            case R.id.settings_item_settings:
                 if(old_menu_active)
                     startActivityForResult(new Intent(getApplicationContext(), Configuration.class), RESULT_CONFIGURATIONS_OK);
                 else
@@ -248,12 +248,15 @@ public class MainActivity extends AppCompatActivity implements WeatherInterface 
 
                 break;
 
-            case R.id.Settings_style:
+            case R.id.settings_item_settings_style:
                 item.setChecked(!item.isChecked());
                 old_menu_active = item.isChecked();
                 break;
-            case R.id.Exit:
+            case R.id.settings_item_exit:
                 finish();
+                break;
+
+            case R.id.settings_item_weather_list:
                 break;
         }
 

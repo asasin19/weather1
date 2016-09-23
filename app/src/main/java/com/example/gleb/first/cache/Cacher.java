@@ -22,11 +22,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.Stream;
 
 /**
@@ -36,11 +32,15 @@ public class Cacher {
     public static final String CACHE_LOG_TAG = "CACHEDEBUG";
     public static final String CACHE_PATH  = "/.weathercache";
     public static final String IMAGE_FOLDER_PATH = CACHE_PATH + "/image";
+    public static final String CONFIG_FOLDER_PATH = CACHE_PATH + "/config";
+    public static final String SAVED_LIST_PATH = CACHE_PATH + "/list";
     public static final String CACHE_TYPE = ".cache";
     public static final String CONFIG_TYPE = ".txt";
-    public static final String CONFIG_FOLDER_PATH = CACHE_PATH + "/config";
+    public static final String SAVED_LIST_TYPE = ".txt";
+
 
     private static Map<String, Properties> config_cache;
+    private static Map<String , List<String>> list_cache;
 
     public static boolean cacheImage(Bitmap bitmap, String name){
         if(!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
@@ -142,13 +142,66 @@ public class Cacher {
         return false;
     }
 
+    public synchronized static boolean cacheList(String name, List<String> list , boolean addToFile){
+        if(list_cache == null)
+            list_cache = new HashMap<String, List<String>>();
+        list_cache.put(name, list);
+        if (!addToFile)
+            return true;
+        if(!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
+            Log.d(CACHE_LOG_TAG, "can't found SD card.");
+            return false;
+        }
+        createFolders();
+        File file = new File(Environment.getExternalStorageDirectory() + SAVED_LIST_PATH + "/" + name + SAVED_LIST_TYPE);
+
+        BufferedWriter writer = null;
+
+
+        try {
+            if(!file.exists())
+                file.createNewFile();
+            writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
+
+
+            for(String item : list){
+                writer.write(item);
+                writer.newLine();
+            }
+
+            writer.flush();
+            return true;
+        }catch (IOException ex){
+            Log.d(CACHE_LOG_TAG, "Can write config, error = " + ex.getMessage());
+        }finally {
+            closeStream(writer);
+        }
+        return false;
+    }
+
     public static boolean saveAllConfigs(){
         createFolders();
+        //Config
+        saveAllConfigsFile();
+        //Config_end
+
+        //Lists
+        saveAllListsCache();
+        //Lists_end
+
+        return true;
+    }
+
+    private static void saveAllConfigsFile(){
+        if(config_cache == null)
+            return;
+        BufferedWriter writer = null;
         for(String name : config_cache.keySet()) {
-            BufferedWriter writer = null;
             try {
                 File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + CONFIG_FOLDER_PATH + "/" + name + CONFIG_TYPE);
                 Properties properties = readConfig(name);
+                if(properties == null)
+                    continue;
                 if (!file.exists())
                     file.createNewFile();
                 writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
@@ -158,8 +211,6 @@ public class Cacher {
                     writer.write(prop + "=" + properties.getProperty(prop));
                     writer.newLine();
                 }
-
-
                 writer.flush();
 
             } catch (IOException ex) {
@@ -167,10 +218,41 @@ public class Cacher {
             } finally {
                 closeStream(writer);
             }
+
             config_cache.put(name, null);
         }
         config_cache = null;
-        return true;
+    }
+
+    private static void saveAllListsCache(){
+        if(list_cache == null)
+            return;
+        BufferedWriter writer = null;
+        for(String name : list_cache.keySet()){
+            try{
+                File file = new File(Environment.getExternalStorageDirectory() + SAVED_LIST_PATH + "/" + name + SAVED_LIST_TYPE);
+                List<String> list = readList(name);
+                if(list == null)
+                    continue;
+
+                if(!file.exists())
+                    file.createNewFile();
+                writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
+
+
+                for(String item : list){
+                    writer.write(item);
+                    writer.newLine();
+                }
+            } catch (IOException ex) {
+                Log.d(CACHE_LOG_TAG, "Can write config, error = " + ex.getMessage());
+            } finally {
+                closeStream(writer);
+            }
+
+            list_cache.put(name, null);
+        }
+        list_cache = null;
     }
 
     public static String readConfig(String name, String propherty){
@@ -194,7 +276,7 @@ public class Cacher {
             reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
             String line;
             while ((line = reader.readLine()) != null){
-                if(line.indexOf("=") != -1) {
+                if(line.contains("=")) {
                     String[] tmp =  line.split("=", 2);
                     properties.setProperty(tmp[0], tmp[1]);
                 }
@@ -206,7 +288,36 @@ public class Cacher {
         }
 
         config_cache.put(name, properties);
-        return properties;
+        return new Properties(properties);
+
+    }
+
+    public static List<String> readList(String name){
+        if(list_cache == null)
+            list_cache = new HashMap<String, List<String>>();
+        else if(list_cache.get(name) != null)
+            return list_cache.get(name);
+        if(!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)){
+            Log.d(CACHE_LOG_TAG, "can't found SD card.");
+            return null;
+        }
+        List<String> list = new LinkedList<>();
+        File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + SAVED_LIST_PATH + "/" + name + SAVED_LIST_TYPE);
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+            String line;
+            while ((line = reader.readLine()) != null){
+                list.add(line);
+            }
+        }catch (IOException ex){
+            Log.d(CACHE_LOG_TAG, "Can't read property, error = " + ex.getMessage());
+        }finally {
+            closeStream(reader);
+        }
+
+        list_cache.put(name, list);
+        return new LinkedList<>(list);
 
     }
 
@@ -217,6 +328,9 @@ public class Cacher {
         if(!file.exists())
             statusList.add(file.mkdirs());
         file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + CONFIG_FOLDER_PATH);
+        if(!file.exists())
+            statusList.add(file.mkdirs());
+        file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + SAVED_LIST_PATH);
         if(!file.exists())
             statusList.add(file.mkdirs());
 

@@ -1,32 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <group
-        android:id="@+id/Settings_Group"
+        android:id="@+id/visible_items" >
+
+        <item
+            android:title=""
+            android:id="@+id/settings_item_weather_list"
+            app:showAsAction="always"
+            android:icon="@drawable/pin" />
+
+    </group>
+
+    <group
+        android:id="@+id/settings_group"
         android:orderInCategory="1"
         >
         <item
-            android:id="@+id/Settings"
+            android:id="@+id/settings_item_settings"
             android:orderInCategory="1"
             android:title="@string/menu_item_settings"
+            android:icon="@drawable/gear"
             />
 
         <item
             android:checkable="true"
-            android:id="@+id/Settings_style"
-            android:title="@string/menu_item_settings_style" />
+            android:id="@+id/settings_item_settings_style"
+            android:title="@string/menu_item_settings_style"
+            android:icon="@drawable/tools"/>
 
     </group>
 
     <group
         android:orderInCategory="2"
-        android:id="@+id/Settings_System"
+        android:id="@+id/settings_system"
         >
         <item
-            android:id="@+id/Exit"
+            android:id="@+id/settings_item_exit"
             android:title="@string/menu_item_exit"
-            android:icon="@android:drawable/ic_menu_close_clear_cancel"
+            android:icon="@drawable/paperplane"
             />
 
     </group>
