@@ -57,17 +57,15 @@ public class SavedPlace implements Iterable<DummyContent.DummyItem>{
     }
 
     public void removePlace(String city){
-        if(citiesList.remove(city)) {
-            listChanged = true;
-            new Thread(task).start();
-        }
+        citiesList.remove(city);
+        listChanged = true;
+        new Thread(task).start();
     }
 
     public void removePlace(int i){
-        if(citiesList.remove(i)) {
-            listChanged = true;
-            new Thread(task).start();
-        }
+        citiesList.remove(i);
+        listChanged = true;
+        new Thread(task).start();
     }
 
     public void setHandler(Handler handler){
@@ -104,8 +102,6 @@ public class SavedPlace implements Iterable<DummyContent.DummyItem>{
                         model.getIconName(), model.getTemperature(), model.getTemperature_min(),
                         model.getTemperature_max()), "Item"));
             }
-            if(id == 0)
-                return;
             contentContainer.put(operation_id, items);
             Message message = new Message();
             Bundle bundle = new Bundle();

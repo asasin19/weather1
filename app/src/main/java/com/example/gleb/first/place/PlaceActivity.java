@@ -90,20 +90,14 @@ public class PlaceActivity extends FragmentActivity implements PlaceList.OnListF
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-        input = new EditText(getApplicationContext());
-        input.setLayoutParams(new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.MATCH_PARENT));
-
+        View content = getLayoutInflater().inflate(R.layout.dialog_place_findbycity, null);
+        input = (EditText) content.findViewById(R.id.dialog_place_city);
         input.setOnKeyListener(onKeyListener);
-        input.setSingleLine(true);
-        input.setInputType(InputType.TYPE_TEXT_VARIATION_PERSON_NAME);
-        input.setHint("City");
 
-        builder.setMessage("Please, write city")
-                .setView(input)
-                .setPositiveButton("Ok",listener)
-                .setNegativeButton("Cancel", listener);
+        builder.setMessage(R.string.dialog_place_find_message)
+                .setView(content)
+                .setPositiveButton(R.string.dialog_place_find_positive,listener)
+                .setNegativeButton(R.string.dialog_place_find_negative, listener);
 
         dialog = builder.create();
     }
@@ -119,7 +113,7 @@ public class PlaceActivity extends FragmentActivity implements PlaceList.OnListF
         content.findViewById(R.id.dialog_place_menu_choise).setOnClickListener(onClickListener);
         content.findViewById(R.id.dialog_place_menu_delete).setOnClickListener(onClickListener);
 
-        builder.setTitle("Menu")
+        builder.setTitle(R.string.dialog_place_menu_title)
                 .setView(content);
 
         dialogMenu = builder.create();
@@ -158,7 +152,7 @@ public class PlaceActivity extends FragmentActivity implements PlaceList.OnListF
             switch (i){
                 case DIALOG_BUTTON_OK:
                     if(input.getText().length() < 2) {
-                        Toast.makeText(getApplicationContext(), "Please, write city correct!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), R.string.dialog_place_find_city_dis, Toast.LENGTH_SHORT).show();
                         return;
                     }
                     final String text = input.getText().toString();

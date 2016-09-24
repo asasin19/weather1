@@ -50,6 +50,23 @@
     <string name="desription_setting_notifications_on">Notification is active</string>
     <!-- -->
 
+<!-- Place activity -->
+    <!-- Dialog menu-->
+    <string name="dialog_place_menu_title">Menu</string>
+    <string name="dialog_place_menu_choise">Choose</string>
+    <string name="dialog_place_menu_delete">Delete</string>
+    <string name="dialog_place_menu_cancel">Cancel</string>
+    <!-- -->
+
+    <!-- Dialog find by id-->
+    <string name="dialog_place_find_city_hint">City</string>
+    <string name="dialog_place_find_city_dis">Please, write city here!</string>
+    <string name="dialog_place_find_message">Please, write city.</string>
+    <string name="dialog_place_find_positive">Ok</string>
+    <string name="dialog_place_find_negative">Cancel</string>
+
+<!-- Place activity end -->
+
     <string name="cloudimage">CloudImage</string>
     <string name="nav_menu_header_text">My lovely weather app)</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>

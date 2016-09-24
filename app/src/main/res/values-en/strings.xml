@@ -55,6 +55,15 @@
     <string name="location_settings">Location settings</string>
     <string name="share_text">Temperature is %1$s in %2$s place!</string>
     <string name="title_activity_maps">Map</string>
+    <string name="dialog_place_find_city_dis">Please, write city here!</string>
+    <string name="dialog_place_find_city_hint">City</string>
+    <string name="dialog_place_find_message">Please, write city.</string>
+    <string name="dialog_place_find_negative">Cancel</string>
+    <string name="dialog_place_find_positive">Ok</string>
+    <string name="dialog_place_menu_cancel">Cancel</string>
+    <string name="dialog_place_menu_choise">Choose</string>
+    <string name="dialog_place_menu_delete">Delete</string>
+    <string name="dialog_place_menu_title">Menu</string>
     <!-- -->
 
 </resources>

@@ -4,19 +4,19 @@
     android:layout_height="match_parent">
 
     <Button
-        android:text="Choise"
+        android:text="@string/dialog_place_menu_choise"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/dialog_place_menu_choise" />
 
     <Button
-        android:text="Delete"
+        android:text="@string/dialog_place_menu_delete"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/dialog_place_menu_delete" />
 
     <Button
-        android:text="Cancel"
+        android:text="@string/dialog_place_menu_cancel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/dialog_place_menu_cancel" />

@@ -9,7 +9,7 @@
         android:inputType="textPersonName"
         android:ems="10"
         android:id="@+id/dialog_place_city"
-        android:hint="City"
+        android:hint="@string/dialog_place_find_city_hint"
         android:maxLines="1"
-        android:contentDescription="Write city please" />
+        android:contentDescription="@string/dialog_place_find_city_dis" />
 </LinearLayout>

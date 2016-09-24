@@ -57,6 +57,15 @@
     <string name="location_settings">Настройки геолокации</string>
     <string name="share_text">Температура %1$s в %2$s!</string>
     <string name="title_activity_maps">Карта</string>
+    <string name="dialog_place_find_city_dis">Пожалуйста, введите ваш город!</string>
+    <string name="dialog_place_find_city_hint">Город</string>
+    <string name="dialog_place_find_message">Пожалуйста, введите город!</string>
+    <string name="dialog_place_find_negative">Отмена</string>
+    <string name="dialog_place_find_positive">Ок</string>
+    <string name="dialog_place_menu_cancel">Отмена</string>
+    <string name="dialog_place_menu_choise">Выбрать</string>
+    <string name="dialog_place_menu_delete">Удалить</string>
+    <string name="dialog_place_menu_title">Меню</string>
     <!-- -->
 
 </resources>

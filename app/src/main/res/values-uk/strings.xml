@@ -52,6 +52,15 @@
     <string name="location_settings">Налаштунки геолок.</string>
     <string name="share_text">Температура %1$s в %2$s!</string>
     <string name="title_activity_maps">Мапа</string>
+    <string name="dialog_place_find_city_dis">Будьласка, введіть місто!</string>
+    <string name="dialog_place_find_city_hint">Місто</string>
+    <string name="dialog_place_find_message">Будьласка, введіть місто!</string>
+    <string name="dialog_place_find_negative">Відмінити</string>
+    <string name="dialog_place_find_positive">Гуд)</string>
+    <string name="dialog_place_menu_cancel">Відміна</string>
+    <string name="dialog_place_menu_choise">Вибрати</string>
+    <string name="dialog_place_menu_delete">Видалити</string>
+    <string name="dialog_place_menu_title">Меню</string>
     <!-- -->
 
 </resources>
