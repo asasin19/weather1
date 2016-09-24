@@ -29,6 +29,7 @@ public class PlaceList extends Fragment {
     // TODO: Customize parameters
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
+    private OnListFragmentLongInteractionListener mLongListener;
     private MyPlaceRecyclerViewAdapter adapter;
     private SavedPlace savedPlace;
     private RecyclerView recyclerView;
@@ -72,9 +73,9 @@ public class PlaceList extends Fragment {
                 if(items == null)
                     return;
                 if(recyclerView == null)
-                    adapter = new MyPlaceRecyclerViewAdapter(items, mListener);
+                    adapter = new MyPlaceRecyclerViewAdapter(items, mListener, mLongListener);
                 else
-                    recyclerView.setAdapter(new MyPlaceRecyclerViewAdapter(items, mListener));
+                    recyclerView.setAdapter(new MyPlaceRecyclerViewAdapter(items, mListener, mLongListener));
 
                 super.handleMessage(msg);
             }
@@ -90,7 +91,7 @@ public class PlaceList extends Fragment {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
             if(adapter == null)
-                adapter = new MyPlaceRecyclerViewAdapter(DummyContent.ITEMS, mListener);
+                adapter = new MyPlaceRecyclerViewAdapter(DummyContent.ITEMS, mListener, mLongListener);
             recyclerView.setAdapter(adapter);
         }
 
@@ -103,6 +104,7 @@ public class PlaceList extends Fragment {
         super.onAttach(context);
         if (context instanceof OnListFragmentInteractionListener) {
             mListener = (OnListFragmentInteractionListener) context;
+            mLongListener = (OnListFragmentLongInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnListFragmentInteractionListener");
@@ -113,6 +115,7 @@ public class PlaceList extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+        mLongListener = null;
     }
 
     /**
@@ -128,5 +131,9 @@ public class PlaceList extends Fragment {
     public interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
         void onListFragmentInteraction(DummyItem item);
+    }
+
+    public interface OnListFragmentLongInteractionListener{
+        void onListFragmentLongInteraction(DummyItem item);
     }
 }

@@ -15,9 +15,7 @@ import com.example.gleb.first.weatherpack.models.WeatherSimpleModel;
 
 import java.util.*;
 
-/**
- * Created by Gleb on 23.09.2016.
- */
+
 public class SavedPlace implements Iterable<DummyContent.DummyItem>{
     public static final String SAVED_PLACE_DEBUG_TAG = "SAVEDPLACEDEBUG";
 
@@ -39,8 +37,11 @@ public class SavedPlace implements Iterable<DummyContent.DummyItem>{
     private Timer timer;
     private Handler handler;
 
+    private boolean listChanged;
+
     private SavedPlace(){
         operation_id = 0;
+        listChanged = false;
         citiesList = Cacher.readList(LIST_NAME);
         if(citiesList == null)
             citiesList = new LinkedHashSet<>();
@@ -50,24 +51,23 @@ public class SavedPlace implements Iterable<DummyContent.DummyItem>{
     }
 
     public void addPlace(String city){
-        Log.e(SAVED_PLACE_DEBUG_TAG, "Before cities add, city = " + city);
         citiesList.add(city);
-        Log.e(SAVED_PLACE_DEBUG_TAG, "After cities add, city list = " + citiesList);
-        Cacher.cacheList(LIST_NAME, citiesList, false);
-        Log.e(SAVED_PLACE_DEBUG_TAG, "After saved cache add, city = " + citiesList);
+        listChanged = true;
         new Thread(task).start();
     }
 
     public void removePlace(String city){
-        citiesList.remove(city);
-        Cacher.cacheList(LIST_NAME, citiesList, false);
-        new Thread(task).start();
+        if(citiesList.remove(city)) {
+            listChanged = true;
+            new Thread(task).start();
+        }
     }
 
     public void removePlace(int i){
-        citiesList.remove(i);
-        Cacher.cacheList(LIST_NAME, citiesList, false);
-        new Thread(task).start();
+        if(citiesList.remove(i)) {
+            listChanged = true;
+            new Thread(task).start();
+        }
     }
 
     public void setHandler(Handler handler){
@@ -88,7 +88,7 @@ public class SavedPlace implements Iterable<DummyContent.DummyItem>{
     private TimerTask task = new TimerTask() {
         @Override
         public void run() {
-            Log.e(SAVED_PLACE_DEBUG_TAG, "!!!START TASK!!!");
+            Log.d(SAVED_PLACE_DEBUG_TAG, "!!!START TASK!!!");
             if(handler == null)
                 return;
             items = new ArrayList<DummyContent.DummyItem>(citiesList.size());
@@ -96,8 +96,10 @@ public class SavedPlace implements Iterable<DummyContent.DummyItem>{
             for (String city : citiesList) {
                 OpenWeatherLight openWeatherLight = new OpenWeatherLight(city);
                 WeatherSimpleModel model = (WeatherSimpleModel) openWeatherLight.calculate();
-                if(model == null)
+                if(model == null) {
+                    citiesList.remove(city);
                     continue;
+                }
                 items.add(new DummyContent.DummyItem(String.valueOf(id++), new DummyContent.ItemContent(city,
                         model.getIconName(), model.getTemperature(), model.getTemperature_min(),
                         model.getTemperature_max()), "Item"));
@@ -115,7 +117,11 @@ public class SavedPlace implements Iterable<DummyContent.DummyItem>{
             message.setData(bundle);
             */
 
-            Log.e(SAVED_PLACE_DEBUG_TAG, "!!!END TASK!!!");
+            Log.d(SAVED_PLACE_DEBUG_TAG, "!!!END TASK!!!");
+            if(listChanged) {
+                Cacher.cacheList(LIST_NAME, citiesList, false);
+                listChanged = false;
+            }
             handler.sendMessage(message);
         }
     };

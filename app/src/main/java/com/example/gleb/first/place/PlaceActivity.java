@@ -16,6 +16,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -28,14 +29,17 @@ import com.example.gleb.first.weatherpack.Weather;
 import com.example.gleb.first.weatherpack.context.OpenWeatherLight;
 
 
-public class PlaceActivity extends FragmentActivity implements PlaceList.OnListFragmentInteractionListener {
+public class PlaceActivity extends FragmentActivity implements PlaceList.OnListFragmentInteractionListener, PlaceList.OnListFragmentLongInteractionListener {
     public static final int DIALOG_BUTTON_OK = -1;
     public static final int DIALOG_BUTTON_CANCEL = -2;
 
     private Fragment fragment;
     private AlertDialog dialog;
+    private AlertDialog dialogMenu;
     private SavedPlace savedPlace;
     private EditText input;
+
+    private DummyContent.DummyItem choisedItem;
 
 
     @Override
@@ -51,10 +55,14 @@ public class PlaceActivity extends FragmentActivity implements PlaceList.OnListF
 
     @Override
     public void onListFragmentInteraction(DummyContent.DummyItem item) {
-        Bundle bundle = new Bundle();
-        bundle.putString(MainActivityNav.CONFIG_CITY, item.content.city);
-        setResult(MainActivityNav.RESULT_PLACE_CHOISE_OK, new Intent().putExtras(bundle));
-        finish();
+        returnByItem(item);
+    }
+
+    @Override
+    public void onListFragmentLongInteraction(DummyContent.DummyItem item) {
+        createMenuDialog();
+        choisedItem = item;
+        dialogMenu.show();
     }
 
     @Override
@@ -100,6 +108,30 @@ public class PlaceActivity extends FragmentActivity implements PlaceList.OnListF
         dialog = builder.create();
     }
 
+    private void createMenuDialog(){
+        if(dialogMenu != null)
+            return;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        View content = getLayoutInflater().inflate(R.layout.dialog_place_menu, null);
+        content.findViewById(R.id.dialog_place_menu_cancel).setOnClickListener(onClickListener);
+        content.findViewById(R.id.dialog_place_menu_choise).setOnClickListener(onClickListener);
+        content.findViewById(R.id.dialog_place_menu_delete).setOnClickListener(onClickListener);
+
+        builder.setTitle("Menu")
+                .setView(content);
+
+        dialogMenu = builder.create();
+    }
+
+    private void returnByItem(DummyContent.DummyItem item){
+        Bundle bundle = new Bundle();
+        bundle.putString(MainActivityNav.CONFIG_CITY, item.content.city);
+        setResult(MainActivityNav.RESULT_PLACE_CHOISE_OK, new Intent().putExtras(bundle));
+        finish();
+    }
+
     private View.OnKeyListener onKeyListener = new View.OnKeyListener() {
         @Override
         public boolean onKey(View view, int i, KeyEvent keyEvent) {
@@ -141,4 +173,26 @@ public class PlaceActivity extends FragmentActivity implements PlaceList.OnListF
             }
         }
     };
+
+    private View.OnClickListener onClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            switch (view.getId()){
+                case R.id.dialog_place_menu_cancel:
+                    dialogMenu.hide();
+                    break;
+
+                case R.id.dialog_place_menu_choise:
+                    returnByItem(choisedItem);
+                    dialogMenu.hide();
+                    break;
+
+                case R.id.dialog_place_menu_delete:
+                    savedPlace.removePlace(choisedItem.content.city);
+                    dialogMenu.hide();
+                    break;
+            }
+        }
+    };
+
 }

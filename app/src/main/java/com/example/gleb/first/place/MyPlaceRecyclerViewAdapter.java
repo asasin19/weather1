@@ -18,10 +18,12 @@ public class MyPlaceRecyclerViewAdapter extends RecyclerView.Adapter<MyPlaceRecy
 
     private final List<DummyItem> mValues;
     private final PlaceList.OnListFragmentInteractionListener mListener;
+    private final PlaceList.OnListFragmentLongInteractionListener mLongListener;
 
-    public MyPlaceRecyclerViewAdapter(List<DummyItem> items, PlaceList.OnListFragmentInteractionListener listener) {
+    public MyPlaceRecyclerViewAdapter(List<DummyItem> items, PlaceList.OnListFragmentInteractionListener listener, PlaceList.OnListFragmentLongInteractionListener listener1) {
         mValues = items;
         mListener = listener;
+        mLongListener = listener1;
     }
 
     public void addItem(DummyItem item){
@@ -59,6 +61,14 @@ public class MyPlaceRecyclerViewAdapter extends RecyclerView.Adapter<MyPlaceRecy
                     // fragment is attached to one) that an item has been selected.
                     mListener.onListFragmentInteraction(holder.mItem);
                 }
+            }
+        });
+        holder.mView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                if(null != mLongListener)
+                    mLongListener.onListFragmentLongInteraction(holder.mItem);
+                return true;
             }
         });
     }
